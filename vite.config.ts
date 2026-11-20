@@ -11,6 +11,7 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
   tanstackStart: {
+    router: { basepath: "/v2" },
     server: { entry: "server" },
   },
   vite: {

@@ -27,7 +27,7 @@ export function UpsellShell({ step, notice, noticeTone, module, status, title, i
     }, [
         temUtm
     ]);
-    return <main className="up-page relative"><img src="/images/bg-up2prosp-portal.jpg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-[0.12]" width={1024} height={1536}/><div className="absolute inset-0" style={{
+    return <main className="up-page relative"><img src="/v2/images/bg-up2prosp-portal.jpg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-[0.12]" width={1024} height={1536}/><div className="absolute inset-0" style={{
         background: "radial-gradient(circle at 50% 13%, oklch(0.92 0.06 240 / 50%), transparent 36%), linear-gradient(180deg, oklch(1 0 0 / 84%), oklch(0.94 0.05 245 / 78%))"
     }}/><div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-[430px] flex-col px-4 pt-4"><header className="shrink-0"><div className={`mb-2 rounded-lg border px-3 py-1.5 text-center ${i[noticeTone]}`}><p className="text-[10px] font-black uppercase tracking-wide">{notice}</p></div><div className="mb-2 flex items-center justify-between"><div><p className="text-[9px] font-black uppercase tracking-[0.24em] text-[color:var(--steel-deep)]">{module}</p><p className="text-sm font-black uppercase">Step {step} of 3</p></div><span className="rounded-full border border-[color:var(--steel)] bg-white/65 px-3 py-1 text-[10px] font-black text-[color:var(--steel-deep)]">{o[step]}%</span></div><div className="h-1.5 overflow-hidden rounded-full bg-white/75"><div className="h-full rounded-full transition-all duration-500" style={{
         width: `${o[step]}%`,

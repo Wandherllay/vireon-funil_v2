@@ -64,7 +64,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
             Try again
           </button>
           <a
-            href="/"
+            href="/v2/"
             className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
             Go home
@@ -95,8 +95,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: appCss,
       },
       // Original site stylesheet (fonts, colors, custom classes) — loaded last so it wins.
-      { rel: "stylesheet", href: "/vireon.css" },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "stylesheet", href: "/v2/vireon.css" },
+      { rel: "icon", href: "/v2/favicon.ico", type: "image/x-icon" },
     ],
     scripts: [
       {

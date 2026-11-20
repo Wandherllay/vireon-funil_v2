@@ -231,7 +231,7 @@ export function Offer() {
                 try {
                     sessionStorage.setItem(c, "1");
                 } catch (e) {}
-                window.location.href = `/backredirect${window.location.search}${window.location.hash}`;
+                window.location.href = `/v2/backredirect${window.location.search}${window.location.hash}`;
             }
         };
         let a = ()=>{

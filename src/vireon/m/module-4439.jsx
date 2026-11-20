@@ -27,7 +27,7 @@ export function c({ variant }) {
                 else video.pause();
             }} />
         {silent && <Button variant="ghost" className="vireon-video-sound" aria-label="Ativar som do vídeo" onClick={enableSound}>
-            <img src="/media/video-sound.png" alt="" />
+            <img src="/v2/media/video-sound.png" alt="" />
         </Button>}
     </div></div>;
 }
