@@ -1,0 +1,3 @@
+- [x] Save funnel videos and their covers inside the project and replace external playback.
+- [x] Verify existing images and fonts are local and test playback (desktop and mobile; audio enabled; no vturb requests).
+- [ ] Localize course videos when original files are supplied (blocked: original video host does not resolve).
