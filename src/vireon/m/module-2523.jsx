@@ -4,16 +4,16 @@ export let W7 = {
     quiz: {
         account: "d331dfa7-f65a-427e-934f-2c0eb96fde35",
         idVideo: "6af4af893b8119193afcee74",
-        src: "/media/quiz.mp4",
-        poster: "/media/quiz-cover.jpg",
+        src:"/v2/media/quiz.mp4",
+        poster: "/v2/media/quiz-cover.jpg",
         aspect: 133.33333333333331,
         delay: 75
     },
     offer: {
         account: "d331dfa7-f65a-427e-934f-2c0eb96fde35",
         idVideo: "6af363ef05e11b886f13c5ea",
-        src: "/media/offer.mp4",
-        poster: "/media/offer-cover.jpg",
+        src:"/v2/media/offer.mp4",
+        poster: "/v2/media/offer-cover.jpg",
         aspect: 133.33333333333331,
         delay: 75
     }

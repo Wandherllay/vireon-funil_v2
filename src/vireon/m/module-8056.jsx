@@ -555,7 +555,7 @@ export function Quiz() {
     ]);
     let EiComponent = (e)=><div className="mx-auto flex max-w-[440px] flex-col items-center px-6 py-6">{e}</div>;
     let er = <button type="button" onClick={en} aria-label="Back" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f5f5f5]"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round"/></svg></button>;
-    let eo = <div className="fixed inset-x-0 top-0 z-50 bg-white shadow-sm"><div className="mx-auto max-w-[440px] px-4 pb-1 pt-2"><div className="mb-2 flex items-center justify-between"><div className="flex items-center gap-2">{er}<img src="/esquizz/dr/dr-thompson.png" alt="Dr Michael Thompson" width={40} height={40} className="h-10 w-10 rounded-full border-2 border-emerald-500 object-cover"/><div><div className="flex items-center gap-1"><span className="text-[14px] font-semibold text-[#1a1a1a]" style={{
+    let eo = <div className="fixed inset-x-0 top-0 z-50 bg-white shadow-sm"><div className="mx-auto max-w-[440px] px-4 pb-1 pt-2"><div className="mb-2 flex items-center justify-between"><div className="flex items-center gap-2">{er}<img src="/v2/esquizz/dr/dr-thompson.png" alt="Dr Michael Thompson" width={40} height={40} className="h-10 w-10 rounded-full border-2 border-emerald-500 object-cover"/><div><div className="flex items-center gap-1"><span className="text-[14px] font-semibold text-[#1a1a1a]" style={{
         letterSpacing: "-0.02em"
     }}>Dr Michael Thompson</span><svg width="12" height="12" viewBox="0 0 24 24" fill="#2a9d6f" aria-hidden="true"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg></div><span className="text-[12px] text-[#888]">{Z <= 4 ? "Profile assessment" : Z <= 10 ? "Ingredient check" : Z <= 16 ? "Dose calibration" : "Protocol ready"}</span></div></div><span className="text-[12px] text-[#888]">{Z >= 2 && Z <= 4 ? `${Z - 1}/3` : Z >= 6 && Z <= 9 ? `${Z - 5}/4` : Z >= 12 && Z <= 16 ? `${Z - 11}/5` : ""}</span></div><div className="w-full px-4 py-2"><div className="h-1.5 overflow-hidden rounded-full bg-gray-100"><div className="h-full bg-emerald-500 transition-all duration-500" style={{
         width: `${ee}%`
@@ -731,25 +731,25 @@ export function Quiz() {
     if (b.kind === "stories") {
         return <div className="min-h-screen bg-white"><Y1Component onBack={en}/><div className="pb-28 pt-12">{EiComponent(<><h2 className="mb-1 text-center text-[24px] font-bold text-[#1a1a1a]">Transformation stories</h2><p className="mb-5 text-center text-[15px] text-[#555]">See what real men achieved with the baking soda trick</p><div className="mb-6 w-full space-y-3">{[
             [
-                "/esquizz/assets/t-james.jpg",
+                "/v2/esquizz/assets/t-james.jpg",
                 "James, 57",
                 "Dallas",
                 "In 4 days my morning erections were back. My wife couldn't believe it."
             ],
             [
-                "/esquizz/assets/t-steve.jpg",
+                "/v2/esquizz/assets/t-steve.jpg",
                 "Steve, 56",
                 "Phoenix",
                 "I spent $700 on Viagra. The baking soda cost me $2 and works better."
             ],
             [
-                "/esquizz/assets/t-michael.jpg",
+                "/v2/esquizz/assets/t-michael.jpg",
                 "Michael, 63",
                 "Denver",
                 "The urologist said it was normal at my age. Now I have sex 3 times a week."
             ],
             [
-                "/esquizz/assets/t-paul.jpg",
+                "/v2/esquizz/assets/t-paul.jpg",
                 "Paul, 61",
                 "Atlanta",
                 "My wife asked what had gotten into me. For 2 months we can't stop."
@@ -771,7 +771,7 @@ export function Quiz() {
             }}>{e}</div>)}</div></div></div>;
     }
     if (b.kind === "guarantee") {
-        return <div className="min-h-screen bg-white px-5 py-5"><div className="mx-auto w-full max-w-[430px]"><div className="border-b border-[#e5e7eb] pb-4"><div className="flex items-center gap-2"><img src="/esquizz/dr/dr-thompson.png" alt="Dr Michael Thompson" width={40} height={40} className="h-10 w-10 rounded-full border-2 border-emerald-500 object-cover"/><div><p className="text-xs font-semibold text-gray-800">Dr Michael Thompson</p><p className="text-[10px] text-emerald-600">Certified protocol</p></div></div></div><section className="pt-6"><p className="mb-2 text-xs font-bold uppercase text-[#2a9d6f]">Your protection</p><h1 className="text-[32px] font-extrabold leading-[1.06] text-[#1f252e]">Try Vireon <span className="text-[#2a9d6f]">risk-free</span></h1><p className="mt-3 text-base font-medium leading-relaxed text-[#64748b]">If the protocol is not right for you, request a full refund within 30 days. No complicated process.</p><button type="button" aria-label="Activate 30-day guarantee" aria-pressed={M} onClick={()=>setM((e)=>!e)} className="mx-auto mt-8 flex h-44 w-44 flex-col items-center justify-center rounded-full border-[6px] border-double border-[#2a9d6f]/30 bg-[#2a9d6f]/5 text-[#2a9d6f] transition-transform active:scale-95"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="mb-1"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg><span className="text-[29px] font-black leading-none">30-DAY</span><span className="mt-1 text-[10px] font-bold uppercase">Money-back guarantee</span></button><p className="mt-3 text-center text-[11px] font-bold uppercase text-[#64748b]">Tap the seal to activate</p><div className="mt-6 space-y-3">{[
+        return <div className="min-h-screen bg-white px-5 py-5"><div className="mx-auto w-full max-w-[430px]"><div className="border-b border-[#e5e7eb] pb-4"><div className="flex items-center gap-2"><img src="/v2/esquizz/dr/dr-thompson.png" alt="Dr Michael Thompson" width={40} height={40} className="h-10 w-10 rounded-full border-2 border-emerald-500 object-cover"/><div><p className="text-xs font-semibold text-gray-800">Dr Michael Thompson</p><p className="text-[10px] text-emerald-600">Certified protocol</p></div></div></div><section className="pt-6"><p className="mb-2 text-xs font-bold uppercase text-[#2a9d6f]">Your protection</p><h1 className="text-[32px] font-extrabold leading-[1.06] text-[#1f252e]">Try Vireon <span className="text-[#2a9d6f]">risk-free</span></h1><p className="mt-3 text-base font-medium leading-relaxed text-[#64748b]">If the protocol is not right for you, request a full refund within 30 days. No complicated process.</p><button type="button" aria-label="Activate 30-day guarantee" aria-pressed={M} onClick={()=>setM((e)=>!e)} className="mx-auto mt-8 flex h-44 w-44 flex-col items-center justify-center rounded-full border-[6px] border-double border-[#2a9d6f]/30 bg-[#2a9d6f]/5 text-[#2a9d6f] transition-transform active:scale-95"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="mb-1"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg><span className="text-[29px] font-black leading-none">30-DAY</span><span className="mt-1 text-[10px] font-bold uppercase">Money-back guarantee</span></button><p className="mt-3 text-center text-[11px] font-bold uppercase text-[#64748b]">Tap the seal to activate</p><div className="mt-6 space-y-3">{[
             "30 days to explore the complete protocol",
             "A simple refund request if it is not for you"
         ].map((e)=><div key={e} className="flex items-start gap-3 text-sm font-semibold text-[#1f252e]"><span className="text-[#2a9d6f]">✔</span><span>{e}</span></div>)}</div><button type="button" role="switch" aria-checked={M} onClick={()=>setM((e)=>!e)} className="mt-6 flex min-h-[88px] w-full items-center gap-4 rounded-2xl border border-[#e5e7eb] bg-white p-4 text-left shadow-sm"><span className={`relative h-8 w-14 shrink-0 rounded-full transition-colors ${M ? "bg-[#2a9d6f]" : "bg-[#e5e7eb]"}`}><span className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-transform ${M ? "translate-x-7" : "translate-x-1"}`}/></span><span><span className="block text-sm font-bold text-[#1f252e]">Activate my 30-day money-back guarantee</span><span className="mt-1 block text-xs text-[#64748b]">Your protection is included with either plan.</span></span></button><button type="button" onClick={ea} disabled={!M} className="mt-5 h-14 w-full rounded-xl bg-[#1f3a2e] text-base font-bold text-white disabled:opacity-50">See my final recommendation →</button>{!M && <p className="mt-3 text-center text-xs font-semibold text-[#64748b]">Activate your guarantee to continue</p>}</section></div></div>;
