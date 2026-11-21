@@ -1,6 +1,6 @@
 /* Vireon /v2 first-party session tracking. No PII, no cookies, no full URLs. */
 (function () {
-  if (!/^\/v2(?:\/|$)/.test(window.location.pathname)) return;
+  if (!/^\/v2(?:\/|$)/.test(window.location.pathname) || /^\/v2\/analytics-admin(?:\/|$)/.test(window.location.pathname)) return;
   if (navigator.doNotTrack === '1' || navigator.globalPrivacyControl === true) return;
   var KEY = 'vireon_v2_session';
   var session;
