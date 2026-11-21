@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useLocation,
   HeadContent,
   Scripts,
   type ErrorComponentProps,
@@ -14,6 +15,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { LanguageProvider } from "../vireon/m/module-3677.jsx";
 import { TitleSync } from "../vireon/m/module-6907.jsx";
+import { installFunnelTracker, trackRoute } from "../lib/vireon-browser-tracker";
 
 function NotFoundComponent() {
   return (
@@ -127,6 +129,11 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useLocation({ select: (location) => location.pathname });
+  useEffect(() => {
+    installFunnelTracker();
+    trackRoute(pathname);
+  }, [pathname]);
 
   return (
     <QueryClientProvider client={queryClient}>
