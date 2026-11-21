@@ -1,7 +1,8 @@
 // @ts-nocheck
 /* eslint-disable */
 import * as c from "../shim/navigation.js";
-import { $b, bw, ze } from "./module-2523.jsx";
+import { bw, ze } from "./module-2523.jsx";
+import { $b } from "./checkout-v4.js";
 import { fv } from "./module-6885.jsx";
 import { d as d_1 } from "./module-6171.jsx";
 
