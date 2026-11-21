@@ -2,7 +2,8 @@
 /* eslint-disable */
 import * as i from "./module-4439.jsx";
 import { TD } from "./module-7439.jsx";
-import { $b, W7, ze } from "./module-2523.jsx";
+import { W7, ze } from "./module-2523.jsx";
+import { $b } from "./checkout-v4.js";
 import { fv } from "./module-6885.jsx";
 import { d } from "./module-6171.jsx";
 
