@@ -18,16 +18,6 @@ const Link = forwardRef(function Link(
       onClick={(e) => {
         onClick?.(e);
         if (e.defaultPrevented) return;
-        if (typeof window !== "undefined" && typeof window.vireonTrack === "function") {
-          try {
-            const destination = new URL(resolvedUrl, window.location.href);
-            if (destination.hostname === "go.centerpag.com" || destination.hostname === "checkout.centerpag.com") {
-              window.vireonTrack("checkout_click", "perfectpay_redirect");
-            } else if (destination.origin === window.location.origin && destination.pathname.startsWith("/v2/") && destination.pathname !== window.location.pathname) {
-              window.vireonTrack("step_click", destination.pathname.slice(0, 64));
-            }
-          } catch (_) {}
-        }
         if (target && target !== "_self") return;
         if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
         if (/^(https?:)?\/\//.test(url) || url.startsWith("mailto:") || url.startsWith("tel:")) return;
