@@ -1,0 +1,82 @@
+/**
+ * First-party /v2 visitor telemetry.
+ * Loaded through the React bundle, so route tracking does not depend on a
+ * separately cached external script. No names, answers, email or card fields.
+ */
+type EventName = 'page_view' | 'step_click' | 'checkout_click' | 'upsell_accept' | 'upsell_decline';
+type TrackerWindow = Window & { vireonTrack?: (event: EventName, detail?: string) => void; __vireonTrackerInstalled?: boolean };
+const sessionKey = 'vireon_v2_session';
+const isFunnelPage = (path: string) => (path === '/v2' || path.startsWith('/v2/')) && !(path === '/v2/analytics-admin' || path.startsWith('/v2/analytics-admin/'));
+let sessionId = '';
+let utmSource = '';
+let utmCampaign = '';
+
+function getSession() {
+  if (sessionId) return sessionId;
+  try {
+    sessionId = sessionStorage.getItem(sessionKey) || crypto.randomUUID();
+    sessionStorage.setItem(sessionKey, sessionId);
+  } catch { sessionId = crypto.randomUUID(); }
+  return sessionId;
+}
+
+export function sendFunnelEvent(event: EventName, detail = '') {
+  if (typeof window === 'undefined' || !isFunnelPage(location.pathname)) return;
+  if (navigator.doNotTrack === '1' || navigator.globalPrivacyControl === true) return;
+  const params = new URLSearchParams(location.search);
+  utmSource ||= (params.get('utm_source') || '').slice(0, 80);
+  utmCampaign ||= (params.get('utm_campaign') || '').slice(0, 80);
+  const body = JSON.stringify({
+    event,
+    session_id: getSession(),
+    path: location.pathname.slice(0, 160),
+    step: detail.slice(0, 64),
+    utm_source: utmSource,
+    utm_campaign: utmCampaign,
+  });
+  // Fetch makes failures observable in DevTools; keepalive supports redirects.
+  void fetch('/v2/api/analytics/collect', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body,
+    keepalive: true,
+    credentials: 'same-origin',
+  }).then((response) => {
+    if (!response.ok) console.warn('[Vireon Analytics] HTTP', response.status, event);
+  }).catch(() => console.warn('[Vireon Analytics] Event transmission failed:', event));
+}
+
+export function installFunnelTracker() {
+  if (typeof window === 'undefined') return;
+  const w = window as TrackerWindow;
+  if (w.__vireonTrackerInstalled) return;
+  w.__vireonTrackerInstalled = true;
+  w.vireonTrack = sendFunnelEvent;
+  document.addEventListener('click', (ev) => {
+    if (!isFunnelPage(location.pathname)) return;
+    const element = (ev.target as Element | null)?.closest?.('[data-funnel-event], a[href], button');
+    if (!element) return;
+    const annotated = element.getAttribute('data-funnel-event') as EventName | null;
+    if (annotated && ['step_click', 'checkout_click', 'upsell_accept', 'upsell_decline'].includes(annotated)) {
+      sendFunnelEvent(annotated, element.getAttribute('data-funnel-step') || '');
+      return;
+    }
+    if (element instanceof HTMLAnchorElement) {
+      try {
+        const url = new URL(element.href, location.href);
+        if (url.hostname === 'go.centerpag.com' || url.hostname === 'checkout.centerpag.com') {
+          sendFunnelEvent('checkout_click', 'perfectpay_redirect');
+        } else if (url.origin === location.origin && isFunnelPage(url.pathname) && url.pathname !== location.pathname) {
+          sendFunnelEvent('step_click', url.pathname.slice(0, 64));
+        }
+      } catch { /* malformed links do not interrupt page navigation */ }
+    } else if (element instanceof HTMLButtonElement && element.type !== 'submit') {
+      sendFunnelEvent('step_click', 'button');
+    }
+  }, true);
+}
+
+export function trackRoute(pathname: string) {
+  if (!isFunnelPage(pathname)) return;
+  sendFunnelEvent('page_view', 'route');
+}
