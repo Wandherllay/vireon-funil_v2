@@ -3,7 +3,7 @@
  * Loaded through the React bundle, so route tracking does not depend on a
  * separately cached external script. No names, answers, email or card fields.
  */
-type EventName = 'page_view' | 'step_click' | 'checkout_click' | 'upsell_accept' | 'upsell_decline';
+type EventName = 'page_view' | 'quiz_start' | 'offer_view' | 'checkout_click' | 'upsell_view' | 'upsell_accept' | 'upsell_decline' | 'thank_you_view';
 type TrackerWindow = Window & { vireonTrack?: (event: EventName, detail?: string) => void; __vireonTrackerInstalled?: boolean };
 const sessionKey = 'vireon_v2_session';
 type TrackerDiagnostic = { installed: boolean; routeCalls: number; eventsAttempted: number; lastEvent: string; lastHttp: string; currentPath: string; dnt: string; gpc: boolean };
@@ -21,6 +21,7 @@ const isFunnelPage = (path: string) => (path === '/v2' || path.startsWith('/v2/'
 let sessionId = '';
 let utmSource = '';
 let utmCampaign = '';
+const sentMilestones = new Set<string>();
 
 function getSession() {
   if (sessionId) return sessionId;
@@ -50,6 +51,14 @@ export function sendFunnelEvent(event: EventName, detail = '') {
   renderDiagnostics();
   if (!isFunnelPage(location.pathname)) { status.lastHttp = 'blocked:path'; renderDiagnostics(); return; }
   if (navigator.doNotTrack === '1' || navigator.globalPrivacyControl === true) { status.lastHttp = 'blocked:privacy-signal'; renderDiagnostics(); return; }
+  const oncePerSession = new Set<EventName>(['page_view', 'quiz_start', 'offer_view', 'checkout_click', 'upsell_view', 'thank_you_view']);
+  const dedupeKey = event === 'upsell_view' ? event + ':' + detail : event;
+  const dedupeStorageKey = 'vireon_v2_sent:' + getSession() + ':' + dedupeKey;
+  if (oncePerSession.has(event)) {
+    try { if (sessionStorage.getItem(dedupeStorageKey) === '1') return; } catch { if (sentMilestones.has(dedupeKey)) return; }
+    sentMilestones.add(dedupeKey);
+    try { sessionStorage.setItem(dedupeStorageKey, '1'); } catch { /* memory fallback */ }
+  }
   status.eventsAttempted++;
   renderDiagnostics();
   const params = new URLSearchParams(location.search);
@@ -73,8 +82,22 @@ export function sendFunnelEvent(event: EventName, detail = '') {
   }).then((response) => {
     status.lastHttp = String(response.status);
     renderDiagnostics();
-    if (!response.ok) console.warn('[Vireon Analytics] HTTP', response.status, event);
-  }).catch(() => { status.lastHttp = 'network_error'; renderDiagnostics(); console.warn('[Vireon Analytics] Event transmission failed:', event); });
+    if (!response.ok) {
+      if (oncePerSession.has(event)) {
+        sentMilestones.delete(dedupeKey);
+        try { sessionStorage.removeItem(dedupeStorageKey); } catch {}
+      }
+      console.warn('[Vireon Analytics] HTTP', response.status, event);
+    }
+  }).catch(() => {
+    status.lastHttp = 'network_error';
+    if (oncePerSession.has(event)) {
+      sentMilestones.delete(dedupeKey);
+      try { sessionStorage.removeItem(dedupeStorageKey); } catch {}
+    }
+    renderDiagnostics();
+    console.warn('[Vireon Analytics] Event transmission failed:', event);
+  });
 }
 
 export function installFunnelTracker() {
@@ -90,21 +113,18 @@ export function installFunnelTracker() {
     const element = (ev.target as Element | null)?.closest?.('[data-funnel-event], a[href], button');
     if (!element) return;
     const annotated = element.getAttribute('data-funnel-event') as EventName | null;
-    if (annotated && ['step_click', 'checkout_click', 'upsell_accept', 'upsell_decline'].includes(annotated)) {
+    if (annotated === 'checkout_click' || annotated === 'upsell_accept' || annotated === 'upsell_decline') {
       sendFunnelEvent(annotated, element.getAttribute('data-funnel-step') || '');
       return;
     }
+    // Quiz choice clicks, Continue buttons and internal step links are intentionally ignored.
     if (element instanceof HTMLAnchorElement) {
       try {
         const url = new URL(element.href, location.href);
         if (url.hostname === 'go.centerpag.com' || url.hostname === 'checkout.centerpag.com') {
           sendFunnelEvent('checkout_click', 'perfectpay_redirect');
-        } else if (url.origin === location.origin && isFunnelPage(url.pathname) && url.pathname !== location.pathname) {
-          sendFunnelEvent('step_click', url.pathname.slice(0, 64));
         }
-      } catch { /* malformed links do not interrupt page navigation */ }
-    } else if (element instanceof HTMLButtonElement && element.type !== 'submit') {
-      sendFunnelEvent('step_click', 'button');
+      } catch { /* preserve navigation */ }
     }
   }, true);
 }
@@ -112,9 +132,12 @@ export function installFunnelTracker() {
 export function trackRoute(_routerPathname?: string) {
   status.routeCalls++;
   renderDiagnostics();
-  // TanStack Router's useLocation().pathname can be basepath-relative (e.g. '/quiz').
-  // The browser location always contains the public '/v2' prefix.
-  if (typeof window === 'undefined' || !isFunnelPage(window.location.pathname)) return;
-  sendFunnelEvent('page_view', 'route');
+  if (typeof window === 'undefined') return;
+  const path = window.location.pathname.replace(/\\/+$|^$/g, '') || '/';
+  if (!isFunnelPage(path)) return;
+  if (path === '/v2') sendFunnelEvent('page_view', 'landing');
+  else if (path === '/v2/quiz') sendFunnelEvent('quiz_start', 'quiz');
+  else if (path === '/v2/offer') sendFunnelEvent('offer_view', 'offer');
+  else if (/^\\/v2\\/up[123]$/.test(path)) sendFunnelEvent('upsell_view', path.slice(4));
+  else if (path === '/v2/thanks') sendFunnelEvent('thank_you_view', 'thanks');
 }
-
