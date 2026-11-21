@@ -137,7 +137,7 @@ function RootComponent() {
   useEffect(() => {
     if (lastTrackedPath.current !== pathname) {
       lastTrackedPath.current = pathname;
-      if (/^\\/v2(?:\\/|$)/.test(pathname) && !pathname.startsWith("/v2/analytics-admin")) {
+      if ((pathname === "/v2" || pathname.startsWith("/v2/")) && !pathname.startsWith("/v2/analytics-admin")) {
         (window as Window & { vireonTrack?: (event: string, detail?: string) => void }).vireonTrack?.("page_view", "route_change");
       }
     }
