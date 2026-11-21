@@ -2,13 +2,10 @@
 /* eslint-disable */
 import * as i from "./module-4439.jsx";
 import { TD } from "./module-7439.jsx";
-import { W7, ze as originalPrices } from "./module-2523.jsx";
+import { W7, ze } from "./module-2523.jsx";
 import { $b } from "./checkout-v4.js";
 import { fv } from "./module-6885.jsx";
 import { d } from "./module-6171.jsx";
-
-// Preço de exibição da oferta Complete; checkout configurado separadamente.
-const ze = { ...originalPrices, complete: { ...originalPrices.complete, base: 16.02, charged: 16.02 } };
 
 import * as r from "react";
 let p = [
