@@ -133,11 +133,12 @@ export function trackRoute(_routerPathname?: string) {
   status.routeCalls++;
   renderDiagnostics();
   if (typeof window === 'undefined') return;
-  const path = window.location.pathname.replace(/\\/+$|^$/g, '') || '/';
+  const rawPath = window.location.pathname;
+  const path = rawPath.endsWith('/') ? rawPath.slice(0, -1) : rawPath;
   if (!isFunnelPage(path)) return;
   if (path === '/v2') sendFunnelEvent('page_view', 'landing');
   else if (path === '/v2/quiz') sendFunnelEvent('quiz_start', 'quiz');
   else if (path === '/v2/offer') sendFunnelEvent('offer_view', 'offer');
-  else if (/^\\/v2\\/up[123]$/.test(path)) sendFunnelEvent('upsell_view', path.slice(4));
+  else if (['/v2/up1', '/v2/up2', '/v2/up3'].includes(path)) sendFunnelEvent('upsell_view', path.slice(4));
   else if (path === '/v2/thanks') sendFunnelEvent('thank_you_view', 'thanks');
 }
