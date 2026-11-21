@@ -4,11 +4,12 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useLocation,
   HeadContent,
   Scripts,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -131,6 +132,16 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useLocation({ select: (location) => location.pathname });
+  const lastTrackedPath = useRef(pathname);
+  useEffect(() => {
+    if (lastTrackedPath.current !== pathname) {
+      lastTrackedPath.current = pathname;
+      if (/^\\/v2(?:\\/|$)/.test(pathname) && !pathname.startsWith("/v2/analytics-admin")) {
+        (window as Window & { vireonTrack?: (event: string, detail?: string) => void }).vireonTrack?.("page_view", "route_change");
+      }
+    }
+  }, [pathname]);
 
   return (
     <QueryClientProvider client={queryClient}>
