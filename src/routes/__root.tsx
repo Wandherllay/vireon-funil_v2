@@ -9,12 +9,13 @@ import {
   Scripts,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { LanguageProvider } from "../vireon/m/module-3677.jsx";
 import { TitleSync } from "../vireon/m/module-6907.jsx";
+import { installFunnelTracker, trackRoute } from "../lib/vireon-browser-tracker";
 
 function NotFoundComponent() {
   return (
@@ -101,10 +102,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     scripts: [
       {
-        src: "/funnel-tracker.js",
-        defer: true,
-      },
-      {
         src: "https://painel.forcemichaelthompson.app/track.js",
         async: true,
       },
@@ -133,14 +130,9 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useLocation({ select: (location) => location.pathname });
-  const lastTrackedPath = useRef(pathname);
   useEffect(() => {
-    if (lastTrackedPath.current !== pathname) {
-      lastTrackedPath.current = pathname;
-      if ((pathname === "/v2" || pathname.startsWith("/v2/")) && !pathname.startsWith("/v2/analytics-admin")) {
-        (window as Window & { vireonTrack?: (event: string, detail?: string) => void }).vireonTrack?.("page_view", "route_change");
-      }
-    }
+    installFunnelTracker();
+    trackRoute(pathname);
   }, [pathname]);
 
   return (
