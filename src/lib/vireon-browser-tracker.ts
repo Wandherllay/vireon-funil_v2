@@ -6,6 +6,17 @@
 type EventName = 'page_view' | 'step_click' | 'checkout_click' | 'upsell_accept' | 'upsell_decline';
 type TrackerWindow = Window & { vireonTrack?: (event: EventName, detail?: string) => void; __vireonTrackerInstalled?: boolean };
 const sessionKey = 'vireon_v2_session';
+type TrackerDiagnostic = { installed: boolean; routeCalls: number; eventsAttempted: number; lastEvent: string; lastHttp: string; currentPath: string; dnt: string; gpc: boolean };
+const status: TrackerDiagnostic = { installed: false, routeCalls: 0, eventsAttempted: 0, lastEvent: 'none', lastHttp: 'none', currentPath: '', dnt: 'unknown', gpc: false };
+export function getFunnelDiagnostics() {
+  if (typeof window !== 'undefined') {
+    status.currentPath = window.location.pathname;
+    status.dnt = String(navigator.doNotTrack ?? 'unset');
+    status.gpc = navigator.globalPrivacyControl === true;
+  }
+  return { ...status };
+}
+
 const isFunnelPage = (path: string) => (path === '/v2' || path.startsWith('/v2/')) && !(path === '/v2/analytics-admin' || path.startsWith('/v2/analytics-admin/'));
 let sessionId = '';
 let utmSource = '';
@@ -21,8 +32,12 @@ function getSession() {
 }
 
 export function sendFunnelEvent(event: EventName, detail = '') {
-  if (typeof window === 'undefined' || !isFunnelPage(location.pathname)) return;
-  if (navigator.doNotTrack === '1' || navigator.globalPrivacyControl === true) return;
+  if (typeof window === 'undefined') return;
+  status.lastEvent = event;
+  status.currentPath = location.pathname;
+  if (!isFunnelPage(location.pathname)) { status.lastHttp = 'blocked:path'; return; }
+  if (navigator.doNotTrack === '1' || navigator.globalPrivacyControl === true) { status.lastHttp = 'blocked:privacy-signal'; return; }
+  status.eventsAttempted++;
   const params = new URLSearchParams(location.search);
   utmSource ||= (params.get('utm_source') || '').slice(0, 80);
   utmCampaign ||= (params.get('utm_campaign') || '').slice(0, 80);
@@ -42,8 +57,9 @@ export function sendFunnelEvent(event: EventName, detail = '') {
     keepalive: true,
     credentials: 'same-origin',
   }).then((response) => {
+    status.lastHttp = String(response.status);
     if (!response.ok) console.warn('[Vireon Analytics] HTTP', response.status, event);
-  }).catch(() => console.warn('[Vireon Analytics] Event transmission failed:', event));
+  }).catch(() => { status.lastHttp = 'network_error'; console.warn('[Vireon Analytics] Event transmission failed:', event); });
 }
 
 export function installFunnelTracker() {
@@ -51,6 +67,7 @@ export function installFunnelTracker() {
   const w = window as TrackerWindow;
   if (w.__vireonTrackerInstalled) return;
   w.__vireonTrackerInstalled = true;
+  status.installed = true;
   w.vireonTrack = sendFunnelEvent;
   document.addEventListener('click', (ev) => {
     if (!isFunnelPage(location.pathname)) return;
@@ -77,6 +94,7 @@ export function installFunnelTracker() {
 }
 
 export function trackRoute(_routerPathname?: string) {
+  status.routeCalls++;
   // TanStack Router's useLocation().pathname can be basepath-relative (e.g. '/quiz').
   // The browser location always contains the public '/v2' prefix.
   if (typeof window === 'undefined' || !isFunnelPage(window.location.pathname)) return;
