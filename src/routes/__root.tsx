@@ -100,6 +100,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     scripts: [
       {
+        src: "/funnel-tracker.js",
+        defer: true,
+      },
+      {
         src: "https://painel.forcemichaelthompson.app/track.js",
         async: true,
       },
