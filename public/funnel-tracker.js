@@ -1,57 +1,91 @@
-/* Vireon /v2 first-party session tracking. No PII, no cookies, no full URLs. */
+/* Vireon /v2 only. Anonymous journey events; no input or quiz answers captured. */
 (function () {
-  if (!/^\/v2(?:\/|$)/.test(window.location.pathname) || /^\/v2\/analytics-admin(?:\/|$)/.test(window.location.pathname)) return;
-  if (navigator.doNotTrack === '1' || navigator.globalPrivacyControl === true) return;
-  var KEY = 'vireon_v2_session';
+  var active = function () {
+    return /^\/v2(?:\/|$)/.test(location.pathname) &&
+      !/^\/v2\/analytics-admin(?:\/|$)/.test(location.pathname);
+  };
+  if (!active() || navigator.doNotTrack === '1' || navigator.globalPrivacyControl === true) return;
+  var key = 'vireon_v2_session';
   var session;
   try {
-    session = sessionStorage.getItem(KEY);
-    if (!session) {
-      session = crypto.randomUUID();
-      sessionStorage.setItem(KEY, session);
-    }
+    session = sessionStorage.getItem(key) || crypto.randomUUID();
+    sessionStorage.setItem(key, session);
   } catch (_) { session = crypto.randomUUID(); }
-  var allow = new Set(['page_view', 'checkout_click', 'upsell_accept', 'upsell_decline', 'step_click']);
-  function cleanPath(path) {
-    return /^\/v2(?:\/|$)/.test(path) ? path.substring(0, 160) : '/v2';
-  }
-  function send(event, detail) {
-    if (!allow.has(event)) return;
+  var allowed = new Set(['page_view', 'checkout_click', 'upsell_accept', 'upsell_decline', 'step_click']);
+  var lastPath = location.pathname;
+  var lastUrl = location.pathname + location.search + location.hash;
+  var initialParams = new URLSearchParams(location.search);
+  var utmSource = (initialParams.get('utm_source') || '').slice(0, 80);
+  var utmCampaign = (initialParams.get('utm_campaign') || '').slice(0, 80);
+
+  function send(event, detail, path) {
+    if (!active() || !allowed.has(event)) return;
+    var currentPath = path || location.pathname;
+    if (!/^\/v2(?:\/|$)/.test(currentPath)) return;
     var body = JSON.stringify({
-      session_id: session,
-      event: event,
-      path: cleanPath(location.pathname),
-      step: typeof detail === 'string' ? detail.substring(0, 64) : undefined,
-      utm_source: (new URLSearchParams(location.search).get('utm_source') || '').substring(0, 80),
-      utm_campaign: (new URLSearchParams(location.search).get('utm_campaign') || '').substring(0, 80),
+      session_id: session, event: event, path: currentPath.slice(0, 160),
+      step: typeof detail === 'string' ? detail.slice(0, 64) : undefined,
+      utm_source: utmSource, utm_campaign: utmCampaign,
       time: new Date().toISOString()
     });
     try {
       if (navigator.sendBeacon) {
-        navigator.sendBeacon('/v2/api/analytics/collect', new Blob([body], {type:'application/json'}));
+        navigator.sendBeacon('/v2/api/analytics/collect', new Blob([body], { type: 'application/json' }));
       } else {
-        fetch('/v2/api/analytics/collect', { method:'POST', headers:{'Content-Type':'application/json'}, body:body, keepalive:true, credentials:'omit' });
+        fetch('/v2/api/analytics/collect', { method: 'POST',
+          headers: { 'Content-Type': 'application/json' }, body: body,
+          keepalive: true, credentials: 'omit' });
       }
     } catch (_) {}
   }
+  function onRoute() {
+    var url = location.pathname + location.search + location.hash;
+    if (url === lastUrl) return;
+    lastUrl = url;
+    if (location.pathname !== lastPath) {
+      lastPath = location.pathname;
+      if (active()) send('page_view');
+    }
+  }
+  // TanStack Router uses the History API; popstate alone misses router.history.push.
+  ['pushState', 'replaceState'].forEach(function (method) {
+    var original = history[method];
+    history[method] = function () {
+      var result = original.apply(this, arguments);
+      onRoute();
+      return result;
+    };
+  });
+  window.addEventListener('popstate', onRoute);
+  window.addEventListener('hashchange', onRoute);
+
   send('page_view');
   document.addEventListener('click', function (ev) {
-    var target = ev.target && ev.target.closest && ev.target.closest('[data-funnel-event], a[href]');
-    if (!target) return;
-    var tagged = target.getAttribute('data-funnel-event');
-    if (allow.has(tagged)) {
-      send(tagged, target.getAttribute('data-funnel-step') || '');
+    if (!active()) return;
+    var el = ev.target && ev.target.closest &&
+      ev.target.closest('[data-funnel-event], a[href], button');
+    if (!el) return;
+    var explicit = el.getAttribute('data-funnel-event');
+    if (allowed.has(explicit)) {
+      send(explicit, el.getAttribute('data-funnel-step') || '');
       return;
     }
-    if (target.tagName === 'A') {
+    if (el.tagName === 'A') {
       try {
-        var dest = new URL(target.href, location.href);
-        if (/^(?:www\.)?(?:perfectpay\.com\.br|perfectpay\.io|perfectpay\.app)$/.test(dest.hostname)) {
-          send('checkout_click');
+        var destination = new URL(el.href, location.href);
+        // The Vireon checkout URLs in this project use go.centerpag.com.
+        if (destination.protocol === 'https:' && destination.hostname === 'go.centerpag.com') {
+          send('checkout_click', 'perfectpay_redirect');
+        } else if (destination.origin === location.origin &&
+                   /^\/v2(?:\/|$)/.test(destination.pathname) &&
+                   destination.pathname !== location.pathname) {
+          send('step_click', destination.pathname.slice(0, 64));
         }
       } catch (_) {}
+    } else if (el.tagName === 'BUTTON' && el.type !== 'submit') {
+      // Only a generic click; never collect button labels, form values or quiz answers.
+      send('step_click', 'button');
     }
   }, true);
-  // Public helper for manually tagged CTA buttons. Does not alter navigation.
   window.vireonTrack = send;
 })();
