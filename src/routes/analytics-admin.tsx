@@ -16,7 +16,6 @@ function AnalyticsAdmin() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState('');
-  const [diagnostic, setDiagnostic] = useState('');
   async function load(e?: FormEvent) {
     e?.preventDefault();
     setLoading(true); setError('');
@@ -28,22 +27,7 @@ function AnalyticsAdmin() {
     } catch (err) { setError(err instanceof Error ? err.message : 'Falha de conexão'); }
     finally { setLoading(false); }
   }
-  async function testCollection() {
-    setDiagnostic('Testando endpoint...');
-    try {
-      const key = 'vireon_v2_session';
-      let id = sessionStorage.getItem(key);
-      if (!id) { id = crypto.randomUUID(); sessionStorage.setItem(key, id); }
-      const response = await fetch('/v2/api/analytics/collect', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ session_id: id, event: 'step_click', path: '/v2/', step: 'admin_diagnostic' }),
-      });
-      const message = await response.text();
-      setDiagnostic(`Coleta HTTP ${response.status}: ${message.slice(0, 160)}`);
-      if (response.ok && token) await load();
-    } catch (err) { setDiagnostic('Erro de rede: ' + (err instanceof Error ? err.message : String(err))); }
-  }
-  const rows = events.filter((r) => !filter || [r.session_id, r.event, r.path, r.product_name, r.order_code].some((x) => String(x || '').toLowerCase().includes(filter.toLowerCase())));
+  const rows = events.filter((r) => r.source === 'perfectpay' || ['page_view', 'quiz_start', 'offer_view', 'checkout_click', 'upsell_view', 'upsell_accept', 'upsell_decline', 'thank_you_view'].includes(r.event || '')).filter((r) => !(r.event === 'page_view' && r.path !== '/v2' && r.path !== '/v2/')).filter((r) => !filter || [r.session_id, r.event, r.path, r.product_name, r.order_code].some((x) => String(x || '').toLowerCase().includes(filter.toLowerCase())));
   return <main style={{ maxWidth: 1100, margin: '0 auto', padding: 24, minHeight: '100vh', fontFamily: 'Arial,sans-serif', color: '#e8eef7', background: '#111827' }}>
     <h1>Vireon Analytics — /v2</h1>
     <p>Consulta privada de eventos. O token permanece apenas na memória desta aba.</p>
@@ -52,9 +36,7 @@ function AnalyticsAdmin() {
       <button type="submit" disabled={!token || loading} style={{ padding: 12, background: '#16a34a', borderRadius: 6, color: 'white' }}>{loading ? 'Carregando...' : 'Atualizar eventos'}</button>
     </form>
     {error && <p role="alert" style={{ color: '#fca5a5' }}>{error}</p>}
-    <p>{rows.length} eventos exibidos (máximo de 300 eventos recentes).</p>
-    <button type="button" onClick={testCollection} style={{ padding: 9, marginBottom: 8, background: "#334155", borderRadius: 6, color: "white" }}>Testar coleta de evento</button>
-    {diagnostic && <p role="status" style={{ fontSize: 13, color: "#facc15" }}>{diagnostic}</p>}
+    <p>{rows.length} eventos relevantes exibidos (máximo de 300 eventos recentes).</p>
     <input aria-label="Filtrar eventos" value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Filtrar sessão, etapa, pedido..." style={{ padding: 12, width: '100%', marginBottom: 12, color: '#111' }}/>
     <div style={{ overflowX: 'auto' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
