@@ -1,5 +1,11 @@
 // @ts-nocheck
 /* eslint-disable */
+import { starterDays } from "../content/program-days-starter.js";
+import { journeyDays } from "../content/program-days-journey.js";
+let guides = {
+    "7-day-starter": starterDays,
+    "30-day-wellness-journey": journeyDays
+};
 let o = [
     "Write one sentence about what changed after reading",
     "Mark the habits you already do",
@@ -23,7 +29,8 @@ function i(slug, level, theme, i, n, s = {}, r = 7) {
             activityTitle: u.activity?.[0] ?? "Today's activity",
             activityBody: u.activity?.[1] ?? "Pick the smallest version of this task that still counts, do it once, and mark it in the checklist below if it happened.",
             tasks: u.tasks ?? o,
-            related: u.related ?? []
+            related: u.related ?? [],
+            guide: guides[slug]?.find((g)=>g.day === dayNumber) ?? null
         };
     });
     let weeks = [];
@@ -646,10 +653,26 @@ let r = [
         }
     ]),
     i("30-day-wellness-journey", "Journey", "cyan", n, s, {
-        1: "Week 1: Foundation",
-        2: "Week 2: Nutrition and Movement",
-        3: "Week 3: Mind and Body",
-        4: "Week 4: Consistency"
+        1: {
+            en: "Week 1: Foundation",
+            pt: "Semana 1: Base",
+            es: "Semana 1: Base"
+        },
+        2: {
+            en: "Week 2: Nutrition and Movement",
+            pt: "Semana 2: Nutrição e movimento",
+            es: "Semana 2: Nutrición y movimiento"
+        },
+        3: {
+            en: "Week 3: Mind and Body",
+            pt: "Semana 3: Mente e corpo",
+            es: "Semana 3: Mente y cuerpo"
+        },
+        4: {
+            en: "Week 4: Consistency",
+            pt: "Semana 4: Constância",
+            es: "Semana 4: Constancia"
+        }
     })
 ];
 export { r as i };

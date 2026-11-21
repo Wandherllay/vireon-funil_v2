@@ -26,8 +26,8 @@ function PComponent() {
             e.push("/admin");
             return;
         }
-        setU("Wrong email or password.");
-    }} className="space-y-4"><label className="block"><span className="mb-1.5 block text-sm text-mist">Email</span><input type="email" required autoComplete="username" value={t} onChange={(e)=>setT(e.target.value)} className="app-input"/></label><label className="block"><span className="mb-1.5 block text-sm text-mist">Password</span><input type="password" required autoComplete="current-password" value={l} onChange={(e)=>setL(e.target.value)} className="app-input"/></label>{u && <p role="alert" className="rounded-xl border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">{u}</p>}<button type="submit" disabled={h} className="app-btn">{t_1(h ? "admin.signingIn" : "admin.signInAdmin")}</button><p className="pt-1 text-center text-xs leading-relaxed text-faint">Demo: <code className="text-mist">{Wr.email}</code> · <code className="text-mist">{Wr.password}</code></p></form><p className="mt-4 text-sm text-mist"><_l href={bw.login} className="text-cyan">{t_1("admin.student")}</_l></p></>;
+        setU(t_1("admin.wrongLogin"));
+    }} className="space-y-4"><label className="block"><span className="mb-1.5 block text-sm text-mist">{t_1("admin.fieldEmail")}</span><input type="email" required autoComplete="username" value={t} onChange={(e)=>setT(e.target.value)} className="app-input"/></label><label className="block"><span className="mb-1.5 block text-sm text-mist">{t_1("admin.fieldPassword")}</span><input type="password" required autoComplete="current-password" value={l} onChange={(e)=>setL(e.target.value)} className="app-input"/></label>{u && <p role="alert" className="rounded-xl border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">{u}</p>}<button type="submit" disabled={h} className="app-btn">{t_1(h ? "admin.signingIn" : "admin.signInAdmin")}</button></form><p className="mt-4 text-sm text-mist"><_l href={bw.login} className="text-cyan">{t_1("admin.student")}</_l></p></>;
 }
 function UComponent() {
     let { t } = m.s9();

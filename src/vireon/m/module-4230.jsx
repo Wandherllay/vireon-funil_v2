@@ -580,22 +580,26 @@ export let e$ = [
             {
                 id: "66561559-85f0-4fc9-b564-8355c5b35d93",
                 title: i("Where is the G-spot?", "Onde fica o ponto G?", "¿Dónde está el punto G?"),
-                url: `${d}/66561559-85f0-4fc9-b564-8355c5b35d93/1774968375420.mp4`
+                url: `${d}/66561559-85f0-4fc9-b564-8355c5b35d93/1774968375420.mp4`,
+                youtube: "2X2NbuedjP0"
             },
             {
                 id: "5f47f323-5159-4f37-8c80-540e84b782f9",
                 title: i("Zones of intense pleasure", "Zonas de prazer intenso", "Zonas de placer intenso"),
-                url: `${d}/5f47f323-5159-4f37-8c80-540e84b782f9/1774968377974.mp4`
+                url: `${d}/5f47f323-5159-4f37-8c80-540e84b782f9/1774968377974.mp4`,
+                youtube: "MPi8pDgFT34"
             },
             {
                 id: "1533b8da-56a4-4b86-abca-ce32d7d7aa9c",
                 title: i("How to find the G-spot, the A-spot, and the cervix", "Como encontrar o ponto G, o ponto A e o colo do útero", "Cómo encontrar el punto G, el punto A y el cuello del útero"),
-                url: `${d}/1533b8da-56a4-4b86-abca-ce32d7d7aa9c/1774968385405.mp4`
+                url: `${d}/1533b8da-56a4-4b86-abca-ce32d7d7aa9c/1774968385405.mp4`,
+                youtube: "kQmsL1X62t4"
             },
             {
                 id: "265229a3-3946-432a-8429-a039ab0185b5",
                 title: i("How to stimulate the G-spot with a toy", "Como estimular o ponto G com um brinquedo", "Cómo estimular el punto G con un juguete"),
-                url: `${d}/265229a3-3946-432a-8429-a039ab0185b5/1774968388132.mp4`
+                url: `${d}/265229a3-3946-432a-8429-a039ab0185b5/1774968388132.mp4`,
+                youtube: "n9K3haOQMGs"
             }
         ]
     },
@@ -606,42 +610,50 @@ export let e$ = [
             {
                 id: "d74f454b-8fc1-4e84-9ffd-98903c539e83",
                 title: i("Squirting tutorial", "Tutorial de squirting", "Tutorial de squirting"),
-                url: `${d}/d74f454b-8fc1-4e84-9ffd-98903c539e83/1774969127522.mp4`
+                url: `${d}/d74f454b-8fc1-4e84-9ffd-98903c539e83/1774969127522.mp4`,
+                youtube: "A8jrezSl9ug"
             },
             {
                 id: "37d5c325-210e-418b-afb2-5cfb6b083b3e",
                 title: i("Jet demonstration, part 2", "Demonstração de jato, parte 2", "Demostración de chorro, parte 2"),
-                url: `${d}/37d5c325-210e-418b-afb2-5cfb6b083b3e/1774969129532.mp4`
+                url: `${d}/37d5c325-210e-418b-afb2-5cfb6b083b3e/1774969129532.mp4`,
+                youtube: "A8jrezSl9ug"
             },
             {
                 id: "3ff54ad7-2a8e-4708-b29b-4d9607dced2c",
                 title: i("Explicit lesson with a partner", "Lição explícita com parceira", "Lección explícita con pareja"),
-                url: `${d}/3ff54ad7-2a8e-4708-b29b-4d9607dced2c/1774969132451.mp4`
+                url: `${d}/3ff54ad7-2a8e-4708-b29b-4d9607dced2c/1774969132451.mp4`,
+                youtube: "NnLOHuEGdrg"
             },
             {
                 id: "40961f2e-1b66-4277-ba8a-b92e6be634a3",
                 title: i("Practical squirting 1", "Prática de squirting 1", "Práctica de squirting 1"),
-                url: `${d}/40961f2e-1b66-4277-ba8a-b92e6be634a3/1774969538367.mp4`
+                url: `${d}/40961f2e-1b66-4277-ba8a-b92e6be634a3/1774969538367.mp4`,
+                youtube: "h37fJPhxaQI"
             },
             {
                 id: "b0a509c1-4d2e-4740-8b6b-adb8ac369be7",
                 title: i("Practical squirting 2", "Prática de squirting 2", "Práctica de squirting 2"),
-                url: `${d}/b0a509c1-4d2e-4740-8b6b-adb8ac369be7/1774969137967.mp4`
+                url: `${d}/b0a509c1-4d2e-4740-8b6b-adb8ac369be7/1774969137967.mp4`,
+                youtube: "h37fJPhxaQI"
             },
             {
                 id: "7fd8de54-7b53-460c-bbc4-7b0c2cbb81d1",
                 title: i("How to help her ejaculate more easily", "Como ajudá-la a ejacular com mais facilidade", "Cómo ayudarla a eyacular con más facilidad"),
-                url: `${d}/7fd8de54-7b53-460c-bbc4-7b0c2cbb81d1/1774969527540.mp4`
+                url: `${d}/7fd8de54-7b53-460c-bbc4-7b0c2cbb81d1/1774969527540.mp4`,
+                youtube: "qLkV0gyn7qU"
             },
             {
                 id: "de1dc63f-a71f-4d24-8667-3f0dd4f11d28",
                 title: i("Step-by-step female ejaculation", "Ejaculação feminina passo a passo", "Eyaculación femenina paso a paso"),
-                url: `${d}/de1dc63f-a71f-4d24-8667-3f0dd4f11d28/1774969143318.mp4`
+                url: `${d}/de1dc63f-a71f-4d24-8667-3f0dd4f11d28/1774969143318.mp4`,
+                youtube: "U6LOtxdb1NU"
             },
             {
                 id: "bdf4f808-ef90-4d59-8ede-eb052d2132b9",
                 title: i("Extra tips for female ejaculation", "Dicas extras de ejaculação feminina", "Consejos extra de eyaculación femenina"),
-                url: `${d}/bdf4f808-ef90-4d59-8ede-eb052d2132b9/1774969145289.mp4`
+                url: `${d}/bdf4f808-ef90-4d59-8ede-eb052d2132b9/1774969145289.mp4`,
+                youtube: "OjEScnzGibk"
             }
         ]
     },
@@ -799,6 +811,7 @@ export let Tk = [
         level: "intermediate",
         minutes: "15",
         window: "45-90",
+        slug: "original-bull-tonic",
         title: i("Original bull tonic", "Tônico do touro original", "Tónico del toro original"),
         text: i("The classic combination from the protocol.", "A combinação clássica do protocolo.", "La combinación clásica del protocolo.")
     },
@@ -807,6 +820,7 @@ export let Tk = [
         level: "easy",
         minutes: "5",
         window: "30-60",
+        slug: "natural-nitric-oxide-boost",
         title: i("Natural nitric oxide boost", "Estímulo natural de óxido nítrico", "Estímulo natural de óxido nítrico"),
         text: i("Beet, citrulline, and water.", "Beterraba, citrulina e água.", "Remolacha, citrulina y agua.")
     },
@@ -815,6 +829,7 @@ export let Tk = [
         level: "advanced",
         minutes: "20",
         window: "2-4 h",
+        slug: "warrior-hormone-elixir",
         title: i("Warrior hormone elixir", "Elixir hormonal do guerreiro", "Elixir hormonal del guerrero"),
         text: i("A longer formula with several ingredients.", "Uma fórmula mais longa com vários ingredientes.", "Una fórmula más larga con varios ingredientes.")
     },
@@ -823,6 +838,7 @@ export let Tk = [
         level: "intermediate",
         minutes: "10",
         window: "20-45",
+        slug: "strong-circulation-stimulant",
         title: i("Strong circulation stimulant", "Estimulante forte da circulação", "Estimulante fuerte de la circulación"),
         text: i("A sharper formula for a short window.", "Uma fórmula mais intensa para uma janela curta.", "Una fórmula más intensa para una ventana corta.")
     },
@@ -831,6 +847,7 @@ export let Tk = [
         level: "advanced",
         minutes: "25",
         window: "60-120",
+        slug: "night-potency-combination",
         title: i("Night potency combination", "Combinação de potência noturna", "Combinación de potencia nocturna"),
         text: i("The longest formula of the set.", "A fórmula mais longa do conjunto.", "La fórmula más larga del conjunto.")
     }

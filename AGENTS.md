@@ -34,3 +34,13 @@ use the editor.
 - Checkout links, prices, video ids and page paths live in `src/vireon/m/module-2523.jsx`; up1/up2 content in `src/vireon/upsells.ts`. Why: single place to swap checkout URLs.
 - `public/vireon.css` is the original compiled stylesheet, loaded after Tailwind so it wins. Why: pixel-identical styling.
 - Funnel videos and covers are repository-local files in `public/media`, played with native HTML video rather than a third-party embed; this makes playback independent of the original host and its domain permissions.
+
+## Single-offer funnel (2026-11-20)
+- The offer is single-product: only the Front/Complete checkout `https://checkout.centerpag.com/pay/PPU38CQHLHP?upsell=true` remains. The Essential plan (14.90) and the Discount/exit-intent page were removed by request.
+- `ze.essential`, `$b.essential` and `$b.discount` no longer exist in `src/vireon/m/module-2523.jsx`; the `/backredirect` route, its module and the offer page's back-button trap were deleted.
+- The `/offer` page copy, the FAQ answers and the final CTA now describe a single plan. Keep any new copy consistent with that (no "both options" wording).
+
+## Member area adjustments (2026-11-20, see ESCOPO-AJUSTES.md)
+- New trilingual content lives in `src/vireon/content/` (program days, tonics, discover details); new pages are `program-day.jsx`, `tonic-detail.jsx`, `discover-art.jsx` in `src/vireon/m/`.
+- `/start/trick` is now the landing page (former Doctor); the Protocol calculator moved to `/start/trick/protocol`; `/start/trick/doctor` redirects. The Trick tab bar is hidden only on the landing.
+- Admin routes still exist but have no entry point in the member UI. Secrets lessons with a `youtube` id play via YouTube embed; others keep the original video.

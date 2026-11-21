@@ -66,6 +66,5 @@ export function GV({ current, children }) {
     })}</ul></nav></div></div>;
 }
 export function wc() {
-    let { t } = c.s9();
-    return <p className="mb-4 rounded-2xl border border-warn/30 bg-warn/10 px-4 py-3 text-sm text-warn">{t("demo.notice")}</p>;
+    return null;
 }

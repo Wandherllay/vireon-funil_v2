@@ -40,7 +40,7 @@ export const up1 = {
     "detail": "Verified Results · Doubled Power"
   },
   "price": 50.53,
-  "buyHref": "https://go.centerpag.com/PPU38CQHSU4?upsell=true",
+  "buyHref": "https://checkout.centerpag.com/pay/PPU38CQHSU4?upsell=true&ref=PPA265T6",
   "buyText": "🔥 YES! ACTIVATE MY ACCELERATOR →",
   "guarantee": "✅ Dr. Jaramillo's Results Guarantee",
   "declineTo": "/up2",
@@ -82,7 +82,7 @@ export const up2 = {
     "detail": "Elite techniques · Instant Access"
   },
   "price": 55.18,
-  "buyHref": "https://go.centerpag.com/PPU38CQHSU8?upsell=true",
+  "buyHref": "https://checkout.centerpag.com/pay/PPU38CQHSU8?upsell=true&ref=PPA265T7",
   "buyText": "🔥 YES! MAKE HER EXPLODE TONIGHT →",
   "guarantee": "⏳ This offer does not appear on any other page",
   "declineTo": "/up3",

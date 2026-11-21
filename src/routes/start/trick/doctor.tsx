@@ -1,12 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { DoctorClient as Page } from "@/vireon/m/module-5220.jsx";
-import { pageHead } from "@/vireon/meta";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
+// The former "Doctor" page is now the Trick landing page at /start/trick.
 export const Route = createFileRoute("/start/trick/doctor")({
-  head: () => pageHead("Doctor"),
-  component: RouteComponent,
+  beforeLoad: ({ location }) => {
+    throw redirect({ to: "/start/trick", search: location.search, replace: true });
+  },
 });
-
-function RouteComponent() {
-  return <Page />;
-}
