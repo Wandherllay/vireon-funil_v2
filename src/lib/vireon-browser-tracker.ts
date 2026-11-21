@@ -76,7 +76,10 @@ export function installFunnelTracker() {
   }, true);
 }
 
-export function trackRoute(pathname: string) {
-  if (!isFunnelPage(pathname)) return;
+export function trackRoute(_routerPathname?: string) {
+  // TanStack Router's useLocation().pathname can be basepath-relative (e.g. '/quiz').
+  // The browser location always contains the public '/v2' prefix.
+  if (typeof window === 'undefined' || !isFunnelPage(window.location.pathname)) return;
   sendFunnelEvent('page_view', 'route');
 }
+
