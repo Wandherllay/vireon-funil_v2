@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ProgramClient as Page } from "@/vireon/m/module-8441.jsx";
 import { pageHead } from "@/vireon/meta";
 
-export const Route = createFileRoute("/start/programs/$slug")({
+export const Route = createFileRoute("/start/programs/$slug/")({
   head: () => pageHead("Programs"),
   component: RouteComponent,
 });

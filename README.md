@@ -12,25 +12,19 @@ https://vireonprotocol.online/quiz
 
 https://vireonprotocol.online/offer
 
-   ├─ Complete  → https://go.centerpag.com/PPU38CQHLHP?upsell=true
+   └─ Complete  → https://checkout.centerpag.com/pay/PPU38CQHLHP?upsell=true
 
-   └─ Essential → https://go.centerpag.com/PPU38CQHLHJ?upsell=true
+https://www.forcemichaelthompson.app/up1?ref=PPA265T6
 
-https://vireonprotocol.online/up1
+   └─ Checkout  → https://checkout.centerpag.com/pay/PPU38CQHSU4?upsell=true&ref=PPA265T6
 
-   └─ Checkout  → https://go.centerpag.com/PPU38CQHLI4?upsell=true
+https://www.forcemichaelthompson.app/up2?ref=PPA265T7
 
-https://vireonprotocol.online/up2
+   └─ Checkout  → https://checkout.centerpag.com/pay/PPU38CQHSU8?upsell=true&ref=PPA265T7
 
-   └─ Checkout  → https://go.centerpag.com/PPU38CQHLI9?upsell=true
+https://www.forcemichaelthompson.app/up3?ref=PPA265T8
 
-https://vireonprotocol.online/up3
-
-   └─ Checkout  → https://go.centerpag.com/PPU38CQHLIE?upsell=true
-
-https://vireonprotocol.online/backredirect
-
-   └─ Checkout  → https://go.centerpag.com/PPU38CQHH9E
+   └─ Checkout  → https://checkout.centerpag.com/pay/PPU38CQHSUB?upsell=true&ref=PPA265T8
 
 https://vireonprotocol.online/thanks
 

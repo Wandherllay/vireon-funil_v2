@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/app'
-import { Route as BackredirectRouteImport } from './routes/backredirect'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OfferRouteImport } from './routes/offer'
 import { Route as QuizRouteImport } from './routes/quiz'
@@ -41,20 +40,23 @@ import { Route as StartProfileSavedRouteImport } from './routes/start/profile/sa
 import { Route as StartProfileSettingsRouteImport } from './routes/start/profile/settings'
 import { Route as StartProfileTermsRouteImport } from './routes/start/profile/terms'
 import { Route as StartProgramsIndexRouteImport } from './routes/start/programs/index'
-import { Route as StartProgramsSlugRouteImport } from './routes/start/programs/$slug'
 import { Route as StartTrickIndexRouteImport } from './routes/start/trick/index'
 import { Route as StartTrickDoctorRouteImport } from './routes/start/trick/doctor'
 import { Route as StartTrickKegelRouteImport } from './routes/start/trick/kegel'
-import { Route as StartTrickTonicRouteImport } from './routes/start/trick/tonic'
+import { Route as StartTrickProtocolRouteImport } from './routes/start/trick/protocol'
 import { Route as AdminContentKindIndexRouteImport } from './routes/admin/content/$kind/index'
 import { Route as AdminContentKindIdRouteImport } from './routes/admin/content/$kind/$id'
 import { Route as StartDiscoverCategoryIndexRouteImport } from './routes/start/discover/$category/index'
 import { Route as StartDiscoverCategorySlugRouteImport } from './routes/start/discover/$category/$slug'
+import { Route as StartProgramsSlugIndexRouteImport } from './routes/start/programs/$slug/index'
 import { Route as StartTrickLessonsIndexRouteImport } from './routes/start/trick/lessons/index'
 import { Route as StartTrickRecipesIndexRouteImport } from './routes/start/trick/recipes/index'
 import { Route as StartTrickRecipesIdRouteImport } from './routes/start/trick/recipes/$id'
 import { Route as StartTrickSecretsIndexRouteImport } from './routes/start/trick/secrets/index'
 import { Route as StartTrickSecretsIdRouteImport } from './routes/start/trick/secrets/$id'
+import { Route as StartTrickTonicIndexRouteImport } from './routes/start/trick/tonic/index'
+import { Route as StartTrickTonicIdRouteImport } from './routes/start/trick/tonic/$id'
+import { Route as StartProgramsSlugDaysDayRouteImport } from './routes/start/programs/$slug/days/$day'
 import { Route as StartTrickLessonsCourseIndexRouteImport } from './routes/start/trick/lessons/$course/index'
 import { Route as StartTrickLessonsCourseSlugRouteImport } from './routes/start/trick/lessons/$course/$slug'
 
@@ -66,11 +68,6 @@ const IndexRoute = IndexRouteImport.update({
 const AppRoute = AppRouteImport.update({
   id: '/app',
   path: '/app',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BackredirectRoute = BackredirectRouteImport.update({
-  id: '/backredirect',
-  path: '/backredirect',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -218,11 +215,6 @@ const StartProgramsIndexRoute = StartProgramsIndexRouteImport.update({
   path: '/start/programs/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const StartProgramsSlugRoute = StartProgramsSlugRouteImport.update({
-  id: '/start/programs/$slug',
-  path: '/start/programs/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const StartTrickIndexRoute = StartTrickIndexRouteImport.update({
   id: '/start/trick/',
   path: '/start/trick/',
@@ -238,9 +230,9 @@ const StartTrickKegelRoute = StartTrickKegelRouteImport.update({
   path: '/start/trick/kegel',
   getParentRoute: () => rootRouteImport,
 } as any)
-const StartTrickTonicRoute = StartTrickTonicRouteImport.update({
-  id: '/start/trick/tonic',
-  path: '/start/trick/tonic',
+const StartTrickProtocolRoute = StartTrickProtocolRouteImport.update({
+  id: '/start/trick/protocol',
+  path: '/start/trick/protocol',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminContentKindIndexRoute = AdminContentKindIndexRouteImport.update({
@@ -265,6 +257,11 @@ const StartDiscoverCategorySlugRoute =
     path: '/start/discover/$category/$slug',
     getParentRoute: () => rootRouteImport,
   } as any)
+const StartProgramsSlugIndexRoute = StartProgramsSlugIndexRouteImport.update({
+  id: '/start/programs/$slug/',
+  path: '/start/programs/$slug/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StartTrickLessonsIndexRoute = StartTrickLessonsIndexRouteImport.update({
   id: '/start/trick/lessons/',
   path: '/start/trick/lessons/',
@@ -290,6 +287,22 @@ const StartTrickSecretsIdRoute = StartTrickSecretsIdRouteImport.update({
   path: '/start/trick/secrets/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StartTrickTonicIndexRoute = StartTrickTonicIndexRouteImport.update({
+  id: '/start/trick/tonic/',
+  path: '/start/trick/tonic/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StartTrickTonicIdRoute = StartTrickTonicIdRouteImport.update({
+  id: '/start/trick/tonic/$id',
+  path: '/start/trick/tonic/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StartProgramsSlugDaysDayRoute =
+  StartProgramsSlugDaysDayRouteImport.update({
+    id: '/start/programs/$slug/days/$day',
+    path: '/start/programs/$slug/days/$day',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const StartTrickLessonsCourseIndexRoute =
   StartTrickLessonsCourseIndexRouteImport.update({
     id: '/start/trick/lessons/$course/',
@@ -306,7 +319,6 @@ const StartTrickLessonsCourseSlugRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
-  '/backredirect': typeof BackredirectRoute
   '/login': typeof LoginRoute
   '/offer': typeof OfferRoute
   '/quiz': typeof QuizRoute
@@ -332,10 +344,9 @@ export interface FileRoutesByFullPath {
   '/start/profile/saved': typeof StartProfileSavedRoute
   '/start/profile/settings': typeof StartProfileSettingsRoute
   '/start/profile/terms': typeof StartProfileTermsRoute
-  '/start/programs/$slug': typeof StartProgramsSlugRoute
   '/start/trick/doctor': typeof StartTrickDoctorRoute
   '/start/trick/kegel': typeof StartTrickKegelRoute
-  '/start/trick/tonic': typeof StartTrickTonicRoute
+  '/start/trick/protocol': typeof StartTrickProtocolRoute
   '/admin/content/': typeof AdminContentIndexRoute
   '/start/discover/': typeof StartDiscoverIndexRoute
   '/start/profile/': typeof StartProfileIndexRoute
@@ -345,18 +356,21 @@ export interface FileRoutesByFullPath {
   '/start/discover/$category/$slug': typeof StartDiscoverCategorySlugRoute
   '/start/trick/recipes/$id': typeof StartTrickRecipesIdRoute
   '/start/trick/secrets/$id': typeof StartTrickSecretsIdRoute
+  '/start/trick/tonic/$id': typeof StartTrickTonicIdRoute
   '/admin/content/$kind/': typeof AdminContentKindIndexRoute
   '/start/discover/$category/': typeof StartDiscoverCategoryIndexRoute
+  '/start/programs/$slug/': typeof StartProgramsSlugIndexRoute
   '/start/trick/lessons/': typeof StartTrickLessonsIndexRoute
   '/start/trick/recipes/': typeof StartTrickRecipesIndexRoute
   '/start/trick/secrets/': typeof StartTrickSecretsIndexRoute
+  '/start/trick/tonic/': typeof StartTrickTonicIndexRoute
+  '/start/programs/$slug/days/$day': typeof StartProgramsSlugDaysDayRoute
   '/start/trick/lessons/$course/$slug': typeof StartTrickLessonsCourseSlugRoute
   '/start/trick/lessons/$course/': typeof StartTrickLessonsCourseIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
-  '/backredirect': typeof BackredirectRoute
   '/login': typeof LoginRoute
   '/offer': typeof OfferRoute
   '/quiz': typeof QuizRoute
@@ -382,10 +396,9 @@ export interface FileRoutesByTo {
   '/start/profile/saved': typeof StartProfileSavedRoute
   '/start/profile/settings': typeof StartProfileSettingsRoute
   '/start/profile/terms': typeof StartProfileTermsRoute
-  '/start/programs/$slug': typeof StartProgramsSlugRoute
   '/start/trick/doctor': typeof StartTrickDoctorRoute
   '/start/trick/kegel': typeof StartTrickKegelRoute
-  '/start/trick/tonic': typeof StartTrickTonicRoute
+  '/start/trick/protocol': typeof StartTrickProtocolRoute
   '/admin/content': typeof AdminContentIndexRoute
   '/start/discover': typeof StartDiscoverIndexRoute
   '/start/profile': typeof StartProfileIndexRoute
@@ -395,11 +408,15 @@ export interface FileRoutesByTo {
   '/start/discover/$category/$slug': typeof StartDiscoverCategorySlugRoute
   '/start/trick/recipes/$id': typeof StartTrickRecipesIdRoute
   '/start/trick/secrets/$id': typeof StartTrickSecretsIdRoute
+  '/start/trick/tonic/$id': typeof StartTrickTonicIdRoute
   '/admin/content/$kind': typeof AdminContentKindIndexRoute
   '/start/discover/$category': typeof StartDiscoverCategoryIndexRoute
+  '/start/programs/$slug': typeof StartProgramsSlugIndexRoute
   '/start/trick/lessons': typeof StartTrickLessonsIndexRoute
   '/start/trick/recipes': typeof StartTrickRecipesIndexRoute
   '/start/trick/secrets': typeof StartTrickSecretsIndexRoute
+  '/start/trick/tonic': typeof StartTrickTonicIndexRoute
+  '/start/programs/$slug/days/$day': typeof StartProgramsSlugDaysDayRoute
   '/start/trick/lessons/$course/$slug': typeof StartTrickLessonsCourseSlugRoute
   '/start/trick/lessons/$course': typeof StartTrickLessonsCourseIndexRoute
 }
@@ -407,7 +424,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRoute
-  '/backredirect': typeof BackredirectRoute
   '/login': typeof LoginRoute
   '/offer': typeof OfferRoute
   '/quiz': typeof QuizRoute
@@ -433,10 +449,9 @@ export interface FileRoutesById {
   '/start/profile/saved': typeof StartProfileSavedRoute
   '/start/profile/settings': typeof StartProfileSettingsRoute
   '/start/profile/terms': typeof StartProfileTermsRoute
-  '/start/programs/$slug': typeof StartProgramsSlugRoute
   '/start/trick/doctor': typeof StartTrickDoctorRoute
   '/start/trick/kegel': typeof StartTrickKegelRoute
-  '/start/trick/tonic': typeof StartTrickTonicRoute
+  '/start/trick/protocol': typeof StartTrickProtocolRoute
   '/admin/content/': typeof AdminContentIndexRoute
   '/start/discover/': typeof StartDiscoverIndexRoute
   '/start/profile/': typeof StartProfileIndexRoute
@@ -446,11 +461,15 @@ export interface FileRoutesById {
   '/start/discover/$category/$slug': typeof StartDiscoverCategorySlugRoute
   '/start/trick/recipes/$id': typeof StartTrickRecipesIdRoute
   '/start/trick/secrets/$id': typeof StartTrickSecretsIdRoute
+  '/start/trick/tonic/$id': typeof StartTrickTonicIdRoute
   '/admin/content/$kind/': typeof AdminContentKindIndexRoute
   '/start/discover/$category/': typeof StartDiscoverCategoryIndexRoute
+  '/start/programs/$slug/': typeof StartProgramsSlugIndexRoute
   '/start/trick/lessons/': typeof StartTrickLessonsIndexRoute
   '/start/trick/recipes/': typeof StartTrickRecipesIndexRoute
   '/start/trick/secrets/': typeof StartTrickSecretsIndexRoute
+  '/start/trick/tonic/': typeof StartTrickTonicIndexRoute
+  '/start/programs/$slug/days/$day': typeof StartProgramsSlugDaysDayRoute
   '/start/trick/lessons/$course/$slug': typeof StartTrickLessonsCourseSlugRoute
   '/start/trick/lessons/$course/': typeof StartTrickLessonsCourseIndexRoute
 }
@@ -459,7 +478,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/app'
-    | '/backredirect'
     | '/login'
     | '/offer'
     | '/quiz'
@@ -485,10 +503,9 @@ export interface FileRouteTypes {
     | '/start/profile/saved'
     | '/start/profile/settings'
     | '/start/profile/terms'
-    | '/start/programs/$slug'
     | '/start/trick/doctor'
     | '/start/trick/kegel'
-    | '/start/trick/tonic'
+    | '/start/trick/protocol'
     | '/admin/content/'
     | '/start/discover/'
     | '/start/profile/'
@@ -498,18 +515,21 @@ export interface FileRouteTypes {
     | '/start/discover/$category/$slug'
     | '/start/trick/recipes/$id'
     | '/start/trick/secrets/$id'
+    | '/start/trick/tonic/$id'
     | '/admin/content/$kind/'
     | '/start/discover/$category/'
+    | '/start/programs/$slug/'
     | '/start/trick/lessons/'
     | '/start/trick/recipes/'
     | '/start/trick/secrets/'
+    | '/start/trick/tonic/'
+    | '/start/programs/$slug/days/$day'
     | '/start/trick/lessons/$course/$slug'
     | '/start/trick/lessons/$course/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/app'
-    | '/backredirect'
     | '/login'
     | '/offer'
     | '/quiz'
@@ -535,10 +555,9 @@ export interface FileRouteTypes {
     | '/start/profile/saved'
     | '/start/profile/settings'
     | '/start/profile/terms'
-    | '/start/programs/$slug'
     | '/start/trick/doctor'
     | '/start/trick/kegel'
-    | '/start/trick/tonic'
+    | '/start/trick/protocol'
     | '/admin/content'
     | '/start/discover'
     | '/start/profile'
@@ -548,18 +567,21 @@ export interface FileRouteTypes {
     | '/start/discover/$category/$slug'
     | '/start/trick/recipes/$id'
     | '/start/trick/secrets/$id'
+    | '/start/trick/tonic/$id'
     | '/admin/content/$kind'
     | '/start/discover/$category'
+    | '/start/programs/$slug'
     | '/start/trick/lessons'
     | '/start/trick/recipes'
     | '/start/trick/secrets'
+    | '/start/trick/tonic'
+    | '/start/programs/$slug/days/$day'
     | '/start/trick/lessons/$course/$slug'
     | '/start/trick/lessons/$course'
   id:
     | '__root__'
     | '/'
     | '/app'
-    | '/backredirect'
     | '/login'
     | '/offer'
     | '/quiz'
@@ -585,10 +607,9 @@ export interface FileRouteTypes {
     | '/start/profile/saved'
     | '/start/profile/settings'
     | '/start/profile/terms'
-    | '/start/programs/$slug'
     | '/start/trick/doctor'
     | '/start/trick/kegel'
-    | '/start/trick/tonic'
+    | '/start/trick/protocol'
     | '/admin/content/'
     | '/start/discover/'
     | '/start/profile/'
@@ -598,11 +619,15 @@ export interface FileRouteTypes {
     | '/start/discover/$category/$slug'
     | '/start/trick/recipes/$id'
     | '/start/trick/secrets/$id'
+    | '/start/trick/tonic/$id'
     | '/admin/content/$kind/'
     | '/start/discover/$category/'
+    | '/start/programs/$slug/'
     | '/start/trick/lessons/'
     | '/start/trick/recipes/'
     | '/start/trick/secrets/'
+    | '/start/trick/tonic/'
+    | '/start/programs/$slug/days/$day'
     | '/start/trick/lessons/$course/$slug'
     | '/start/trick/lessons/$course/'
   fileRoutesById: FileRoutesById
@@ -610,7 +635,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRoute
-  BackredirectRoute: typeof BackredirectRoute
   LoginRoute: typeof LoginRoute
   OfferRoute: typeof OfferRoute
   QuizRoute: typeof QuizRoute
@@ -636,10 +660,9 @@ export interface RootRouteChildren {
   StartProfileSavedRoute: typeof StartProfileSavedRoute
   StartProfileSettingsRoute: typeof StartProfileSettingsRoute
   StartProfileTermsRoute: typeof StartProfileTermsRoute
-  StartProgramsSlugRoute: typeof StartProgramsSlugRoute
   StartTrickDoctorRoute: typeof StartTrickDoctorRoute
   StartTrickKegelRoute: typeof StartTrickKegelRoute
-  StartTrickTonicRoute: typeof StartTrickTonicRoute
+  StartTrickProtocolRoute: typeof StartTrickProtocolRoute
   AdminContentIndexRoute: typeof AdminContentIndexRoute
   StartDiscoverIndexRoute: typeof StartDiscoverIndexRoute
   StartProfileIndexRoute: typeof StartProfileIndexRoute
@@ -649,11 +672,15 @@ export interface RootRouteChildren {
   StartDiscoverCategorySlugRoute: typeof StartDiscoverCategorySlugRoute
   StartTrickRecipesIdRoute: typeof StartTrickRecipesIdRoute
   StartTrickSecretsIdRoute: typeof StartTrickSecretsIdRoute
+  StartTrickTonicIdRoute: typeof StartTrickTonicIdRoute
   AdminContentKindIndexRoute: typeof AdminContentKindIndexRoute
   StartDiscoverCategoryIndexRoute: typeof StartDiscoverCategoryIndexRoute
+  StartProgramsSlugIndexRoute: typeof StartProgramsSlugIndexRoute
   StartTrickLessonsIndexRoute: typeof StartTrickLessonsIndexRoute
   StartTrickRecipesIndexRoute: typeof StartTrickRecipesIndexRoute
   StartTrickSecretsIndexRoute: typeof StartTrickSecretsIndexRoute
+  StartTrickTonicIndexRoute: typeof StartTrickTonicIndexRoute
+  StartProgramsSlugDaysDayRoute: typeof StartProgramsSlugDaysDayRoute
   StartTrickLessonsCourseSlugRoute: typeof StartTrickLessonsCourseSlugRoute
   StartTrickLessonsCourseIndexRoute: typeof StartTrickLessonsCourseIndexRoute
 }
@@ -672,13 +699,6 @@ declare module '@tanstack/react-router' {
       path: '/app'
       fullPath: '/app'
       preLoaderRoute: typeof AppRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/backredirect': {
-      id: '/backredirect'
-      path: '/backredirect'
-      fullPath: '/backredirect'
-      preLoaderRoute: typeof BackredirectRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -884,13 +904,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StartProgramsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/start/programs/$slug': {
-      id: '/start/programs/$slug'
-      path: '/start/programs/$slug'
-      fullPath: '/start/programs/$slug'
-      preLoaderRoute: typeof StartProgramsSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/start/trick/': {
       id: '/start/trick/'
       path: '/start/trick'
@@ -912,11 +925,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StartTrickKegelRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/start/trick/tonic': {
-      id: '/start/trick/tonic'
-      path: '/start/trick/tonic'
-      fullPath: '/start/trick/tonic'
-      preLoaderRoute: typeof StartTrickTonicRouteImport
+    '/start/trick/protocol': {
+      id: '/start/trick/protocol'
+      path: '/start/trick/protocol'
+      fullPath: '/start/trick/protocol'
+      preLoaderRoute: typeof StartTrickProtocolRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/content/$kind/': {
@@ -945,6 +958,13 @@ declare module '@tanstack/react-router' {
       path: '/start/discover/$category/$slug'
       fullPath: '/start/discover/$category/$slug'
       preLoaderRoute: typeof StartDiscoverCategorySlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/start/programs/$slug/': {
+      id: '/start/programs/$slug/'
+      path: '/start/programs/$slug'
+      fullPath: '/start/programs/$slug/'
+      preLoaderRoute: typeof StartProgramsSlugIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/start/trick/lessons/': {
@@ -982,6 +1002,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StartTrickSecretsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/start/trick/tonic/': {
+      id: '/start/trick/tonic/'
+      path: '/start/trick/tonic'
+      fullPath: '/start/trick/tonic/'
+      preLoaderRoute: typeof StartTrickTonicIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/start/trick/tonic/$id': {
+      id: '/start/trick/tonic/$id'
+      path: '/start/trick/tonic/$id'
+      fullPath: '/start/trick/tonic/$id'
+      preLoaderRoute: typeof StartTrickTonicIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/start/programs/$slug/days/$day': {
+      id: '/start/programs/$slug/days/$day'
+      path: '/start/programs/$slug/days/$day'
+      fullPath: '/start/programs/$slug/days/$day'
+      preLoaderRoute: typeof StartProgramsSlugDaysDayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/start/trick/lessons/$course/': {
       id: '/start/trick/lessons/$course/'
       path: '/start/trick/lessons/$course'
@@ -1002,7 +1043,6 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRoute,
-  BackredirectRoute: BackredirectRoute,
   LoginRoute: LoginRoute,
   OfferRoute: OfferRoute,
   QuizRoute: QuizRoute,
@@ -1028,10 +1068,9 @@ const rootRouteChildren: RootRouteChildren = {
   StartProfileSavedRoute: StartProfileSavedRoute,
   StartProfileSettingsRoute: StartProfileSettingsRoute,
   StartProfileTermsRoute: StartProfileTermsRoute,
-  StartProgramsSlugRoute: StartProgramsSlugRoute,
   StartTrickDoctorRoute: StartTrickDoctorRoute,
   StartTrickKegelRoute: StartTrickKegelRoute,
-  StartTrickTonicRoute: StartTrickTonicRoute,
+  StartTrickProtocolRoute: StartTrickProtocolRoute,
   AdminContentIndexRoute: AdminContentIndexRoute,
   StartDiscoverIndexRoute: StartDiscoverIndexRoute,
   StartProfileIndexRoute: StartProfileIndexRoute,
@@ -1041,11 +1080,15 @@ const rootRouteChildren: RootRouteChildren = {
   StartDiscoverCategorySlugRoute: StartDiscoverCategorySlugRoute,
   StartTrickRecipesIdRoute: StartTrickRecipesIdRoute,
   StartTrickSecretsIdRoute: StartTrickSecretsIdRoute,
+  StartTrickTonicIdRoute: StartTrickTonicIdRoute,
   AdminContentKindIndexRoute: AdminContentKindIndexRoute,
   StartDiscoverCategoryIndexRoute: StartDiscoverCategoryIndexRoute,
+  StartProgramsSlugIndexRoute: StartProgramsSlugIndexRoute,
   StartTrickLessonsIndexRoute: StartTrickLessonsIndexRoute,
   StartTrickRecipesIndexRoute: StartTrickRecipesIndexRoute,
   StartTrickSecretsIndexRoute: StartTrickSecretsIndexRoute,
+  StartTrickTonicIndexRoute: StartTrickTonicIndexRoute,
+  StartProgramsSlugDaysDayRoute: StartProgramsSlugDaysDayRoute,
   StartTrickLessonsCourseSlugRoute: StartTrickLessonsCourseSlugRoute,
   StartTrickLessonsCourseIndexRoute: StartTrickLessonsCourseIndexRoute,
 }

@@ -1,12 +1,10 @@
 // @ts-nocheck
 /* eslint-disable */
 import { Z } from "./module-1883.jsx";
-import { bw } from "./module-2523.jsx";
 import { PO } from "./module-4666.jsx";
 import { H } from "./module-9542.jsx";
 
 import * as n from "../shim/navigation.js";
-import _l from "../shim/link.jsx";
 import * as c from "react";
 import * as m from "./module-3677.jsx";
 function PComponent() {
@@ -18,20 +16,17 @@ function PComponent() {
         en: {
             label: "Email",
             invalid: "Enter a valid email.",
-            cta: "Sign in",
-            admin: "Administrator access"
+            cta: "Sign in"
         },
         pt: {
             label: "E-mail",
             invalid: "Informe um e-mail válido.",
-            cta: "Entrar",
-            admin: "Acesso de administrador"
+            cta: "Entrar"
         },
         es: {
             label: "Correo",
             invalid: "Escribe un correo válido.",
-            cta: "Entrar",
-            admin: "Acceso de administrador"
+            cta: "Entrar"
         }
     }[lang];
     return <form onSubmit={function(t) {
@@ -46,7 +41,7 @@ function PComponent() {
     }} className="space-y-4"><label className="block"><span className="mb-1.5 block text-sm text-mist">{h.label}</span><input type="email" value={r} onChange={(e)=>{
         setR(e.target.value);
         setP("");
-    }} required autoComplete="username" placeholder="you@email.com" className="app-input"/></label>{p && <p className="text-sm text-warn">{p}</p>}<button type="submit" className="app-btn">{h.cta}</button><p className="text-sm text-mist"><_l href={bw.admin} className="text-cyan">{h.admin}</_l></p><span className="hidden">{t("nav.home")}</span></form>;
+    }} required autoComplete="username" placeholder="you@email.com" className="app-input"/></label>{p && <p className="text-sm text-warn">{p}</p>}<button type="submit" className="app-btn">{h.cta}</button><span className="hidden">{t("nav.home")}</span></form>;
 }
 let h = {
     en: {

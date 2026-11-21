@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { TrickClient as Page } from "@/vireon/m/module-8800.jsx";
+import { DoctorClient as Page } from "@/vireon/m/module-5220.jsx";
 import { pageHead } from "@/vireon/meta";
 
 export const Route = createFileRoute("/start/trick/")({
-  head: () => pageHead("The Baking Soda Trick"),
+  head: () => pageHead("Trick"),
   component: RouteComponent,
 });
 

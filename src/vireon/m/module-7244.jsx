@@ -8,7 +8,7 @@ import * as r from "./module-3677.jsx";
 let c = [
     {
         key: "trick.protocol",
-        href: "/start/trick"
+        href: "/start/trick/protocol"
     },
     {
         key: "trick.kegel",
@@ -29,10 +29,6 @@ let c = [
     {
         key: "trick.tonic",
         href: "/start/trick/tonic"
-    },
-    {
-        key: "trick.doctor",
-        href: "/start/trick/doctor"
     }
 ];
 export function v({ extra = [] }) {

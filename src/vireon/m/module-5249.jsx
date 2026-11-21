@@ -7,6 +7,7 @@ import _r from "../shim/link.jsx";
 import * as i from "react";
 import * as c from "./module-4230.jsx";
 import * as o from "./module-3677.jsx";
+import { DiscoverArt, hasDiscoverArt } from "./discover-art.jsx";
 let m = {
     salmon: "/v2/media/salmon.jpg",
     beans: "/v2/media/bowl.jpg",
@@ -65,6 +66,6 @@ export function CategoryClient({ category }) {
         return <button key={e} type="button" onClick={()=>setH(e)} aria-pressed={a} className={`shrink-0 rounded-full px-3 py-2 text-sm ${a ? "bg-accent text-white" : "border border-white/10 text-mist"}`}>{e === "all" ? t_1("discover.all") : t_1(`tag.${e}`)}</button>;
     })}</div>{b.length === 0 ? <section className="app-card p-6 text-center"><h2 className="font-display text-xl">{t_1("discover.nothingPublished")}</h2><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-mist">{t_1("discover.nothingPublishedText")}</p></section> : <div className="grid gap-3 sm:grid-cols-2">{b.map((e)=>{
         let src = m[e.slug];
-        return <_r key={e.slug} href={Op(`/start/discover/${j.slug}/${e.slug}`, email)} data-discover="true"><section className="app-card h-full overflow-hidden transition hover:border-cyan/40">{src ? <img alt={e.title[lang]} src={src} className="h-36 w-full object-cover"/> : <div aria-hidden="true" className="grid h-36 place-items-center bg-[radial-gradient(circle_at_30%_20%,rgba(73,210,255,0.35),transparent_40%),linear-gradient(160deg,#12305f,#07101f)] font-display text-2xl text-cyan">{e.title[lang].charAt(0).toUpperCase()}</div>}<div className="p-4"><p className="text-xs uppercase tracking-wide text-faint">{t_1(`tag.${e.tag}`)}</p><h2 className="mt-1 font-semibold">{e.title[lang]}</h2><p className="mt-1 line-clamp-2 text-sm text-mist">{e.text[lang]}</p></div></section></_r>;
+        return <_r key={e.slug} href={Op(`/start/discover/${j.slug}/${e.slug}`, email)} data-discover="true"><section className="app-card h-full overflow-hidden transition hover:border-cyan/40">{hasDiscoverArt(j.slug, e.slug) ? <DiscoverArt category={j.slug} slug={e.slug} label={e.title[lang]}/> : src ? <img alt={e.title[lang]} src={src} className="h-36 w-full object-cover"/> : <div aria-hidden="true" className="grid h-36 place-items-center bg-[radial-gradient(circle_at_30%_20%,rgba(73,210,255,0.35),transparent_40%),linear-gradient(160deg,#12305f,#07101f)] font-display text-2xl text-cyan">{e.title[lang].charAt(0).toUpperCase()}</div>}<div className="p-4"><p className="text-xs uppercase tracking-wide text-faint">{t_1(`tag.${e.tag}`)}</p><h2 className="mt-1 font-semibold">{e.title[lang]}</h2><p className="mt-1 line-clamp-2 text-sm text-mist">{e.text[lang]}</p></div></section></_r>;
     })}</div>}</div></n.GV>;
 }

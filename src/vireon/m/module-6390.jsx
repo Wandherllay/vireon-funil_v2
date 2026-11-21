@@ -253,7 +253,7 @@ export function z8() {
                                     activityTitle: t.activityTitle,
                                     activityBody: t.activityBody,
                                     weekNumber: e.week,
-                                    weekTitle: e.title,
+                                    weekTitle: e.title?.en ?? e.title,
                                     published: true,
                                     tasks: t.tasks.join("\n")
                                 })))
