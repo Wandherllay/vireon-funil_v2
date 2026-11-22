@@ -5,8 +5,10 @@ type EventRow = {
   source?: string; event?: string; session_id?: string; path?: string; step?: string;
   product_name?: string; order_code?: string; sale_status_enum?: number;
   utm_source?: string; utm_campaign?: string; received_at?: string;
+  visitor_type?: 'real' | 'test' | 'unclassified';
 };
 type EventDistributionItem = { event: string; count: number; percentage: number };
+type VisitorSummary = { real: number; test: number; unclassified: number };
 type TrackingHealth = {
   storage: 'ok';
   checkedAt: string;
@@ -34,7 +36,7 @@ function TrackingHealthPanel({ health }: { health: TrackingHealth }) {
         <strong style={{ color: '#86efac' }}>Respondendo</strong>
       </div>
       <div style={{ flex: '2 1 240px' }}>
-        <div style={{ color: '#cbd5e1', fontSize: 12 }}>Último evento do /v2 recebido</div>
+        <div style={{ color: '#cbd5e1', fontSize: 12 }}>Último evento real identificado do /v2</div>
         <strong>{last}</strong>
       </div>
       <div style={{ flex: '1 1 150px' }}>
@@ -50,7 +52,7 @@ function TrackingHealthPanel({ health }: { health: TrackingHealth }) {
       {activity}
     </p>
     <p style={{ color: '#94a3b8', fontSize: 12, lineHeight: 1.5, margin: 0 }}>
-      Estes dados são independentes dos filtros e mostram apenas eventos recebidos do domínio /v2.
+      Estes dados são independentes dos filtros e consideram apenas eventos classificados como reais no domínio /v2.
       Sem eventos recentes não significa, por si só, rastreamento com defeito: pode não haver tráfego.
       A resposta do banco não confirma que todos os navegadores estão enviando os eventos.
     </p>
@@ -221,6 +223,9 @@ function AnalyticsAdmin() {
   const [appliedFilter, setAppliedFilter] = useState('');
   const [period, setPeriod] = useState('7d');
   const [appliedPeriod, setAppliedPeriod] = useState('7d');
+  const [visitorType, setVisitorType] = useState('real');
+  const [appliedVisitorType, setAppliedVisitorType] = useState('real');
+  const [visitorSummary, setVisitorSummary] = useState<VisitorSummary | null>(null);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(500);
   const [total, setTotal] = useState(0);
@@ -228,13 +233,16 @@ function AnalyticsAdmin() {
   const actionStyle = { padding: '11px 14px', background: '#2563eb', borderRadius: 6, color: 'white', cursor: 'pointer' };
   const mutedStyle = { opacity: 0.5, cursor: 'not-allowed' };
 
-  async function load(nextPage = 1, size = pageSize, search = filter, selectedPeriod = period) {
+  async function load(nextPage = 1, size = pageSize, search = filter, selectedPeriod = period, selectedVisitorType = visitorType) {
     if (!token.trim()) return;
     setLoading(true);
     setError('');
     try {
       const normalized = search.trim().slice(0, 120);
-      const params = new URLSearchParams({ page: String(nextPage), pageSize: String(size), period: selectedPeriod });
+      const params = new URLSearchParams({
+        page: String(nextPage), pageSize: String(size),
+        period: selectedPeriod, visitorType: selectedVisitorType,
+      });
       if (normalized) params.set('q', normalized);
       const response = await fetch('/v2/api/analytics/events?' + params.toString(), {
         headers: { Authorization: 'Bearer ' + token }, cache: 'no-store',
@@ -251,6 +259,8 @@ function AnalyticsAdmin() {
       setTotalPages(Number(data.totalPages) || 1);
       setAppliedFilter(normalized);
       setAppliedPeriod(selectedPeriod);
+      setAppliedVisitorType(selectedVisitorType);
+      setVisitorSummary(data.visitorSummary || null);
       setLoaded(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Falha de conexão.');
@@ -264,7 +274,7 @@ function AnalyticsAdmin() {
     setExporting(true);
     setError('');
     try {
-      const params = new URLSearchParams({ format: 'csv', period: appliedPeriod });
+      const params = new URLSearchParams({ format: 'csv', period: appliedPeriod, visitorType: appliedVisitorType });
       if (appliedFilter) params.set('q', appliedFilter);
       const response = await fetch('/v2/api/analytics/events?' + params.toString(), {
         headers: { Authorization: 'Bearer ' + token }, cache: 'no-store',
@@ -288,7 +298,7 @@ function AnalyticsAdmin() {
 
   function searchEvents(e: FormEvent) {
     e.preventDefault();
-    void load(1, pageSize, filter, period);
+    void load(1, pageSize, filter, period, visitorType);
   }
 
   const first = total ? (page - 1) * pageSize + 1 : 0;
@@ -301,7 +311,7 @@ function AnalyticsAdmin() {
     <p>Eventos do funil www.forcemichaelthompson.app/v2. O token permanece apenas na memória desta aba.</p>
     <form onSubmit={searchEvents} style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 18, alignItems: 'center' }}>
       <input aria-label="Token administrativo" type="password" autoComplete="off" value={token}
-        onChange={(e) => { setToken(e.target.value); setLoaded(false); setEvents([]); setDistribution([]); setSessionFunnel(null); setHealth(null); setTotal(0); }}
+        onChange={(e) => { setToken(e.target.value); setLoaded(false); setEvents([]); setDistribution([]); setSessionFunnel(null); setHealth(null); setVisitorSummary(null); setTotal(0); }}
         placeholder="Token de administrador" style={{ padding: 12, flex: 1, minWidth: 220, color: '#111', borderRadius: 6 }}/>
       <button type="submit" disabled={!token.trim() || loading}
         style={{ ...actionStyle, ...((!token.trim() || loading) ? mutedStyle : {}) }}>
@@ -319,12 +329,24 @@ function AnalyticsAdmin() {
         style={{ padding: 12, color: '#111', flex: 1, minWidth: 220, borderRadius: 6 }}/>
       <button type="submit" disabled={!token.trim() || loading}
         style={{ ...actionStyle, ...((!token.trim() || loading) ? mutedStyle : {}) }}>Aplicar filtro</button>
+      <label htmlFor="visitor-type">Tipo de acesso</label>
+      <select id="visitor-type" aria-label="Tipo de acesso" value={visitorType}
+        onChange={(e) => {
+          const selected = e.target.value;
+          setVisitorType(selected);
+          if (loaded) void load(1, pageSize, appliedFilter, appliedPeriod, selected);
+        }} style={{ padding: 11, borderRadius: 6, color: '#111' }}>
+        <option value="real">Somente visitantes reais</option>
+        <option value="test">Somente testes</option>
+        <option value="unclassified">Não classificados / antigos</option>
+        <option value="all">Todos os registros</option>
+      </select>
       <label htmlFor="events-period">Período</label>
       <select id="events-period" aria-label="Período dos eventos" value={period}
         onChange={(e) => {
           const selected = e.target.value;
           setPeriod(selected);
-          if (loaded) void load(1, pageSize, appliedFilter, selected);
+          if (loaded) void load(1, pageSize, appliedFilter, selected, appliedVisitorType);
         }} style={{ padding: 11, borderRadius: 6, color: '#111' }}>
         <option value="24h">Últimas 24 horas</option>
         <option value="7d">Últimos 7 dias</option>
@@ -336,12 +358,26 @@ function AnalyticsAdmin() {
         onChange={(e) => {
           const size = Number(e.target.value);
           setPageSize(size);
-          if (loaded) void load(1, size, appliedFilter, appliedPeriod);
+          if (loaded) void load(1, size, appliedFilter, appliedPeriod, appliedVisitorType);
         }} style={{ padding: 11, borderRadius: 6, color: '#111' }}>
         {[100, 250, 500, 1000].map((size) => <option key={size} value={size}>{size}</option>)}
       </select>
     </form>
     {error && <p role="alert" style={{ color: '#fca5a5' }}>{error}</p>}
+    {loaded && visitorSummary && <div style={{
+      background: '#172033', border: '1px solid #334155',
+      padding: '12px 15px', borderRadius: 8, margin: '12px 0', fontSize: 13,
+    }}>
+      <strong>Classificação dos eventos no período:</strong>{' '}
+      Reais: {visitorSummary.real.toLocaleString('pt-BR')} ·
+      Testes: {visitorSummary.test.toLocaleString('pt-BR')} ·
+      Não classificados: {visitorSummary.unclassified.toLocaleString('pt-BR')}
+      <p style={{ margin: '6px 0 0', color: '#cbd5e1' }}>
+        A contagem acima é de eventos, não de pessoas. Registros anteriores à implementação
+        e notificações da PerfectPay sem vínculo com uma sessão ficam como não classificados.
+        A escolha padrão exclui testes e registros antigos sem classificação.
+      </p>
+    </div>}
     {loaded && health && <TrackingHealthPanel health={health} />}
     <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '14px 0' }}>
       <button type="button" aria-expanded={showCharts} aria-controls="vireon-charts"
@@ -360,15 +396,15 @@ function AnalyticsAdmin() {
       A exportação CSV respeita o período e a pesquisa e inclui todos os resultados, não apenas a página atual.
     </p>
     <nav aria-label="Paginação de eventos" style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', margin: '18px 0' }}>
-      <button type="button" disabled={disableBack} onClick={() => { void load(page - 1, pageSize, appliedFilter, appliedPeriod); }}
+      <button type="button" disabled={disableBack} onClick={() => { void load(page - 1, pageSize, appliedFilter, appliedPeriod, appliedVisitorType); }}
         style={{ ...actionStyle, ...(disableBack ? mutedStyle : {}) }}>← Anterior</button>
       <span>Página {loaded ? page : 0} de {loaded ? totalPages : 0}</span>
-      <button type="button" disabled={disableNext} onClick={() => { void load(page + 1, pageSize, appliedFilter, appliedPeriod); }}
+      <button type="button" disabled={disableNext} onClick={() => { void load(page + 1, pageSize, appliedFilter, appliedPeriod, appliedVisitorType); }}
         style={{ ...actionStyle, ...(disableNext ? mutedStyle : {}) }}>Próxima →</button>
     </nav>
     <div style={{ overflowX: 'auto' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
-        <thead><tr>{['Horário', 'Origem', 'Evento', 'Sessão / Pedido', 'Página / Produto', 'Etapa', 'Campanha'].map((name) =>
+        <thead><tr>{['Horário', 'Origem', 'Tipo', 'Evento', 'Sessão / Pedido', 'Página / Produto', 'Etapa', 'Campanha'].map((name) =>
           <th key={name} style={{ padding: 10, borderBottom: '1px solid #64748b', whiteSpace: 'nowrap' }}>{name}</th>
         )}</tr></thead>
         <tbody>{events.map((r, i) => <tr key={i}>
@@ -376,6 +412,8 @@ function AnalyticsAdmin() {
             {r.received_at ? new Date(r.received_at).toLocaleString('pt-BR') : '—'}
           </td>
           <td style={{ padding: 10 }}>{r.source || '—'}</td>
+          <td style={{ padding: 10 }}>{r.visitor_type === 'test' ? 'Teste'
+            : r.visitor_type === 'real' ? 'Real' : 'Não classificado'}</td>
           <td style={{ padding: 10 }}>{r.event || '—'}{r.sale_status_enum !== undefined ? ' (' + r.sale_status_enum + ')' : ''}</td>
           <td style={{ padding: 10 }}>{r.session_id?.slice(0, 8) || r.order_code || '—'}</td>
           <td style={{ padding: 10 }}>{r.path || r.product_name || '—'}</td>
@@ -386,10 +424,10 @@ function AnalyticsAdmin() {
       {loaded && !events.length && <p>Nenhum evento encontrado para o filtro atual.</p>}
     </div>
     <nav aria-label="Paginação inferior" style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', marginTop: 20 }}>
-      <button type="button" disabled={disableBack} onClick={() => { void load(page - 1, pageSize, appliedFilter, appliedPeriod); }}
+      <button type="button" disabled={disableBack} onClick={() => { void load(page - 1, pageSize, appliedFilter, appliedPeriod, appliedVisitorType); }}
         style={{ ...actionStyle, ...(disableBack ? mutedStyle : {}) }}>← Anterior</button>
       <span>Página {loaded ? page : 0} de {loaded ? totalPages : 0}</span>
-      <button type="button" disabled={disableNext} onClick={() => { void load(page + 1, pageSize, appliedFilter, appliedPeriod); }}
+      <button type="button" disabled={disableNext} onClick={() => { void load(page + 1, pageSize, appliedFilter, appliedPeriod, appliedVisitorType); }}
         style={{ ...actionStyle, ...(disableNext ? mutedStyle : {}) }}>Próxima →</button>
     </nav>
     <p style={{ marginTop: 22, opacity: 0.7 }}>
