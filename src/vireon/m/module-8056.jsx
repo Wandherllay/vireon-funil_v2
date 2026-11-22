@@ -239,7 +239,6 @@ export function Quiz() {
     let [L, setL] = n.useState(0);
     let [W, setW_1] = n.useState(0);
     let [A, setA] = n.useState(null);
-    let [H, setH] = n.useState(false);
     let [Y, setY] = n.useState(false);
     let [R, setR] = n.useState(false);
     // Only two additional milestones: after question 6/11 and after question 11/11.
@@ -457,10 +456,6 @@ export function Quiz() {
             return e;
         });
     }, []);
-    function el() {
-        setH(false);
-        es();
-    }
     n.useEffect(()=>{
         if (!(b.kind === "saved" || b.kind === "confirmed" || b.kind === "calibrated")) {
             setR(false);
@@ -792,17 +787,11 @@ export function Quiz() {
                     });
                     return;
                 }
-                if (Q.id === "allergy") {
-                    setH(true);
-                    return;
-                }
                 setTimeout(es, Q.id === "symptom" || Q.id === "duration" ? 200 : 500);
             })(e)} aria-pressed={n} className={`flex items-center gap-3 rounded-xl border p-4 text-left transition-all duration-200 ${n ? "border-2 border-[#2a9d6f] bg-[#f0faf5]" : "border-[#e8e8e8] hover:border-[#2a9d6f] hover:bg-[#f8fbf9]"}`} style={{
             padding: "16px 20px"
         }}><span className={`grid h-5 w-5 shrink-0 place-items-center ${Q.multiple ? "rounded-sm" : "rounded-full"} border-2 ${n ? "border-[#2a9d6f] bg-[#2a9d6f]" : "border-[#ccc]"}`}>{n && <span className="text-xs text-white">✓</span>}</span><span className="flex-1 text-[15px] font-medium text-[#1a1a1a]">{Q.emojis?.[t] ? `${Q.emojis[t]} ` : ""}{e}</span>{Q.id === "duration" && <span className="shrink-0 text-lg text-[#ccc]">›</span>}</button>;
-    })}</div>{Q?.multiple && <button type="button" onClick={es} disabled={J.length === 0} className={`mt-5 w-full rounded-xl py-3.5 text-[16px] font-semibold text-white transition-colors duration-200 ${J.length === 0 ? "cursor-not-allowed bg-[#e8e8e8]" : "bg-[#2a9d6f] hover:bg-[#238c5c]"}`}>Continue</button>}</div>)}</div>{H && <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-6" onClick={el} role="presentation"><div className="w-full max-w-[340px] rounded-2xl bg-white p-6" onClick={(e)=>e.stopPropagation()} role="dialog" aria-modal="true"><p className="mb-3 text-2xl">⚠️</p><h3 className="mb-3 text-[18px] font-bold text-[#1a1a1a]" style={{
-        letterSpacing: "-0.02em"
-    }}>Wait — your analysis is already {Math.round(ee)}% complete</h3><p className="mb-3 text-[14px] leading-relaxed text-[#555]">If you leave now, all your data will be lost and you'll have to start over.</p><p className="mb-3 text-[14px] leading-relaxed text-[#555]">Your personalized protocol will be ready in under 60 seconds.</p><p className="mb-5 text-[13px] italic text-[#888]">Crystallized deposits won't go away on their own. Every day without the protocol makes the blockage worse.</p><button type="button" onClick={el} className="w-full rounded-xl bg-[#2a9d6f] py-3.5 text-[16px] font-semibold text-white transition-colors hover:bg-[#238c5c]">Continue my analysis →</button></div></div>}{A && <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 backdrop-blur-sm"><div className="mx-6 w-full max-w-[340px] rounded-2xl bg-white p-6 shadow-xl"><div className="flex flex-col items-center"><span className="mb-3 text-4xl">{A.icon}</span><p className="mb-4 text-center text-[14px] font-medium text-[#1a1a1a]">{A.message}</p><div className="h-1.5 w-full overflow-hidden rounded-full bg-[#e8e8e8]"><div className="h-full rounded-full bg-[#2a9d6f] transition-all duration-100 ease-linear" style={{
+    })}</div>{Q?.multiple && <button type="button" onClick={es} disabled={J.length === 0} className={`mt-5 w-full rounded-xl py-3.5 text-[16px] font-semibold text-white transition-colors duration-200 ${J.length === 0 ? "cursor-not-allowed bg-[#e8e8e8]" : "bg-[#2a9d6f] hover:bg-[#238c5c]"}`}>Continue</button>}</div>)}</div>{A && <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 backdrop-blur-sm"><div className="mx-6 w-full max-w-[340px] rounded-2xl bg-white p-6 shadow-xl"><div className="flex flex-col items-center"><span className="mb-3 text-4xl">{A.icon}</span><p className="mb-4 text-center text-[14px] font-medium text-[#1a1a1a]">{A.message}</p><div className="h-1.5 w-full overflow-hidden rounded-full bg-[#e8e8e8]"><div className="h-full rounded-full bg-[#2a9d6f] transition-all duration-100 ease-linear" style={{
         width: `${L}%`
     }}/></div></div></div></div>}</div>;
 }
