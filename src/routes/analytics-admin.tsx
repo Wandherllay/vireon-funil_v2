@@ -11,6 +11,8 @@ type EventDistributionItem = { event: string; count: number; percentage: number 
 const EVENT_LABELS: Record<string, string> = {
   page_view: 'Visitas ao funil',
   quiz_start: 'Inícios do quiz',
+  quiz_midpoint: 'Metade do quiz (6/11)',
+  quiz_complete: 'Quiz concluído (11/11)',
   offer_view: 'Visualizações da oferta',
   checkout_click: 'Cliques no checkout',
   upsell_view: 'Visualizações de upsell',
@@ -83,7 +85,7 @@ function SessionFunnelPanel({ funnel }: { funnel: SessionFunnel }) {
     </h2>
     <p style={{ fontSize: 13, color: '#cbd5e1', marginTop: 0 }}>
       Sessões únicas iniciadas na entrada /v2, considerando todos os registros do filtro aplicado.
-      Contagens não são número de eventos repetidos.
+      Contagens não são número de eventos repetidos. Os novos marcos do quiz só aparecem para sessões rastreadas após a atualização.
     </p>
     {funnel.landingSessions === 0 ?
       <p style={{ background: '#334155', padding: 12, borderRadius: 6 }}>
