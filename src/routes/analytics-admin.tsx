@@ -296,8 +296,22 @@ function AnalyticsAdmin() {
   const disableBack = !loaded || loading || page <= 1;
   const disableNext = !loaded || loading || page >= totalPages;
 
-  return <main id="vireon-admin" style={{ maxWidth: 1200, margin: '0 auto', padding: '28px 24px', minHeight: '100vh', fontFamily: 'Arial,Helvetica,sans-serif', color: '#f1f5f9', background: '#111827' }}>
+  return <main id="vireon-admin" style={{ width: '100%', maxWidth: 'none', margin: 0, padding: '28px clamp(16px, 2.5vw, 44px)', minHeight: '100vh', boxSizing: 'border-box', fontFamily: 'Arial,Helvetica,sans-serif', color: '#f1f5f9', background: '#111827' }}>
     <style>{`
+      /* Apply the dark canvas only while the private analytics panel exists. */
+      html:has(#vireon-admin), body:has(#vireon-admin) {
+        background: #111827 !important;
+        margin: 0;
+        min-height: 100%;
+        width: 100%;
+      }
+      body:has(#vireon-admin) { min-height: 100vh; }
+      #vireon-admin {
+        width: 100%;
+        max-width: none;
+        min-height: 100vh;
+        box-sizing: border-box;
+      }
       #vireon-admin .va-toolbar-section {
         border: 1px solid #465770;
         background: #1c293b;
