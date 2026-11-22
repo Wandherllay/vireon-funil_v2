@@ -38,17 +38,13 @@ export const Route = createFileRoute('/api/analytics/collect')({
         typeof body.session_id !== 'string' || !/^[0-9a-f-]{36}$/i.test(body.session_id) ||
         typeof body.path !== 'string' ||
         !/^\/v2(?:\/|$)/.test(body.path) ||
-        /^\/v2\/analytics-admin(?:\/|$)/.test(body.path) ||
-        (body.visitor_type !== undefined && body.visitor_type !== 'real' && body.visitor_type !== 'test')) {
+        /^\/v2\/analytics-admin(?:\/|$)/.test(body.path)) {
         return collectorResponse({ error: 'invalid' }, 400, origin);
       }
       try {
         await appendEvent({
           source: 'website', site_host: TRACKED_HOST,
           session_id: body.session_id, event: body.event,
-          // Backward compatibility: older funnel bundles cannot be assumed to be real visitors.
-          visitor_type: body.visitor_type === 'test' ? 'test'
-            : body.visitor_type === 'real' ? 'real' : 'unclassified',
           path: safe(body.path, 160), step: safe(body.step, 64),
           utm_source: safe(body.utm_source, 80), utm_campaign: safe(body.utm_campaign, 80),
           received_at: new Date().toISOString(),
