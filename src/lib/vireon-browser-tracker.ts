@@ -3,7 +3,7 @@
  * Loaded through the React bundle, so route tracking does not depend on a
  * separately cached external script. No names, answers, email or card fields.
  */
-type EventName = 'page_view' | 'quiz_start' | 'offer_view' | 'checkout_click' | 'upsell_view' | 'upsell_accept' | 'upsell_decline' | 'thank_you_view';
+type EventName = 'page_view' | 'quiz_start' | 'quiz_midpoint' | 'quiz_complete' | 'offer_view' | 'checkout_click' | 'upsell_view' | 'upsell_accept' | 'upsell_decline' | 'thank_you_view';
 type TrackerWindow = Window & { vireonTrack?: (event: EventName, detail?: string) => void; __vireonTrackerInstalled?: boolean };
 const sessionKey = 'vireon_v2_session';
 type TrackerDiagnostic = { installed: boolean; routeCalls: number; eventsAttempted: number; lastEvent: string; lastHttp: string; currentPath: string; dnt: string; gpc: boolean };
@@ -57,7 +57,7 @@ export function sendFunnelEvent(event: EventName, detail = '') {
   renderDiagnostics();
   if (!isFunnelPage(location.pathname)) { status.lastHttp = 'blocked:path'; renderDiagnostics(); return; }
   if (navigator.doNotTrack === '1' || navigator.globalPrivacyControl === true) { status.lastHttp = 'blocked:privacy-signal'; renderDiagnostics(); return; }
-  const oncePerSession = new Set<EventName>(['page_view', 'quiz_start', 'offer_view', 'checkout_click', 'upsell_view', 'thank_you_view']);
+  const oncePerSession = new Set<EventName>(['page_view', 'quiz_start', 'quiz_midpoint', 'quiz_complete', 'offer_view', 'checkout_click', 'upsell_view', 'thank_you_view']);
   const dedupeKey = event === 'upsell_view' ? event + ':' + detail : event;
   const dedupeStorageKey = 'vireon_v2_sent:' + getSession() + ':' + dedupeKey;
   if (oncePerSession.has(event)) {

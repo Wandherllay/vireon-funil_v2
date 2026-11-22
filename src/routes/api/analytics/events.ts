@@ -20,7 +20,7 @@ export const Route = createFileRoute('/api/analytics/events')({
         // Redis already retains up to 5,000 entries. Filter before paginating to
         // avoid misleading counts and to exclude events from the Vercel test domain.
         const allowedEvents = new Set([
-          'page_view', 'quiz_start', 'offer_view', 'checkout_click',
+          'page_view', 'quiz_start', 'quiz_midpoint', 'quiz_complete', 'offer_view', 'checkout_click',
           'upsell_view', 'upsell_accept', 'upsell_decline', 'thank_you_view',
         ]);
         const all = await recentEvents(5000);
@@ -83,7 +83,7 @@ export const Route = createFileRoute('/api/analytics/events')({
           counts.set(name, (counts.get(name) || 0) + 1);
         }
         const eventOrder = [
-          'page_view', 'quiz_start', 'offer_view', 'checkout_click',
+          'page_view', 'quiz_start', 'quiz_midpoint', 'quiz_complete', 'offer_view', 'checkout_click',
           'upsell_view', 'upsell_accept', 'upsell_decline', 'thank_you_view',
           'payment_status',
         ];
@@ -114,14 +114,20 @@ export const Route = createFileRoute('/api/analytics/events')({
         }
         const landingSessions = [...perSession.values()].filter((events) => events.has('page_view'));
         const landingCount = landingSessions.length;
-        const hasQuizOrLater = (events: Set<string>) =>
-          events.has('quiz_start') || events.has('offer_view') || events.has('checkout_click');
-        const hasOfferOrLater = (events: Set<string>) =>
-          events.has('offer_view') || events.has('checkout_click');
         const hasCheckoutClick = (events: Set<string>) => events.has('checkout_click');
+        const hasOfferOrLater = (events: Set<string>) =>
+          events.has('offer_view') || hasCheckoutClick(events);
+        const hasQuizCompleteOrLater = (events: Set<string>) =>
+          events.has('quiz_complete') || hasOfferOrLater(events);
+        const hasQuizMidpointOrLater = (events: Set<string>) =>
+          events.has('quiz_midpoint') || hasQuizCompleteOrLater(events);
+        const hasQuizOrLater = (events: Set<string>) =>
+          events.has('quiz_start') || hasQuizMidpointOrLater(events);
         const observedStages = [
           { key: 'landing', label: 'Entraram no /v2', count: landingCount },
-          { key: 'quiz', label: 'Quiz ou etapa posterior', count: landingSessions.filter(hasQuizOrLater).length },
+          { key: 'quiz', label: 'Iniciaram o quiz ou etapa posterior', count: landingSessions.filter(hasQuizOrLater).length },
+          { key: 'quiz_midpoint', label: 'Metade do quiz (6/11) ou etapa posterior', count: landingSessions.filter(hasQuizMidpointOrLater).length },
+          { key: 'quiz_complete', label: 'Finalizaram as 11 perguntas ou etapa posterior', count: landingSessions.filter(hasQuizCompleteOrLater).length },
           { key: 'offer', label: 'Oferta ou etapa posterior', count: landingSessions.filter(hasOfferOrLater).length },
           { key: 'checkout', label: 'Clicaram para o checkout', count: landingSessions.filter(hasCheckoutClick).length },
         ].map((stage) => ({
@@ -130,7 +136,9 @@ export const Route = createFileRoute('/api/analytics/events')({
         }));
         const lastStage = [
           { key: 'landing', label: 'Último registro: entrada /v2', count: landingSessions.filter((events) => !hasQuizOrLater(events)).length },
-          { key: 'quiz', label: 'Último registro: quiz', count: landingSessions.filter((events) => hasQuizOrLater(events) && !hasOfferOrLater(events)).length },
+          { key: 'quiz', label: 'Último registro: início do quiz', count: landingSessions.filter((events) => hasQuizOrLater(events) && !hasQuizMidpointOrLater(events)).length },
+          { key: 'quiz_midpoint', label: 'Último registro: metade do quiz', count: landingSessions.filter((events) => hasQuizMidpointOrLater(events) && !hasQuizCompleteOrLater(events)).length },
+          { key: 'quiz_complete', label: 'Último registro: quiz concluído', count: landingSessions.filter((events) => hasQuizCompleteOrLater(events) && !hasOfferOrLater(events)).length },
           { key: 'offer', label: 'Último registro: oferta', count: landingSessions.filter((events) => hasOfferOrLater(events) && !hasCheckoutClick(events)).length },
           { key: 'checkout', label: 'Último registro: clique no checkout', count: landingSessions.filter(hasCheckoutClick).length },
         ].map((stage) => ({
