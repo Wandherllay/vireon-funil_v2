@@ -97,6 +97,53 @@ export const Route = createFileRoute('/api/analytics/events')({
               percentage: total ? Math.round((count / total) * 1000) / 10 : 0,
             };
           });
+        // Session-based funnel: one visitor session is counted once per stage.
+        // A later event implies progress even if a prior milestone was missed.
+        // These are the last RECORDED stages, not proven abandonment.
+        const perSession = new Map<string, Set<string>>();
+        for (const row of filtered) {
+          if (row.source !== 'website' ||
+            typeof row.session_id !== 'string' ||
+            !/^[0-9a-f-]{36}$/i.test(row.session_id)) continue;
+          let recorded = perSession.get(row.session_id);
+          if (!recorded) {
+            recorded = new Set<string>();
+            perSession.set(row.session_id, recorded);
+          }
+          recorded.add(row.event);
+        }
+        const landingSessions = [...perSession.values()].filter((events) => events.has('page_view'));
+        const landingCount = landingSessions.length;
+        const hasQuizOrLater = (events: Set<string>) =>
+          events.has('quiz_start') || events.has('offer_view') || events.has('checkout_click');
+        const hasOfferOrLater = (events: Set<string>) =>
+          events.has('offer_view') || events.has('checkout_click');
+        const hasCheckoutClick = (events: Set<string>) => events.has('checkout_click');
+        const observedStages = [
+          { key: 'landing', label: 'Entraram no /v2', count: landingCount },
+          { key: 'quiz', label: 'Quiz ou etapa posterior', count: landingSessions.filter(hasQuizOrLater).length },
+          { key: 'offer', label: 'Oferta ou etapa posterior', count: landingSessions.filter(hasOfferOrLater).length },
+          { key: 'checkout', label: 'Clicaram para o checkout', count: landingSessions.filter(hasCheckoutClick).length },
+        ].map((stage) => ({
+          ...stage,
+          percentage: landingCount ? Math.round((stage.count / landingCount) * 1000) / 10 : 0,
+        }));
+        const lastStage = [
+          { key: 'landing', label: 'Último registro: entrada /v2', count: landingSessions.filter((events) => !hasQuizOrLater(events)).length },
+          { key: 'quiz', label: 'Último registro: quiz', count: landingSessions.filter((events) => hasQuizOrLater(events) && !hasOfferOrLater(events)).length },
+          { key: 'offer', label: 'Último registro: oferta', count: landingSessions.filter((events) => hasOfferOrLater(events) && !hasCheckoutClick(events)).length },
+          { key: 'checkout', label: 'Último registro: clique no checkout', count: landingSessions.filter(hasCheckoutClick).length },
+        ].map((stage) => ({
+          ...stage,
+          percentage: landingCount ? Math.round((stage.count / landingCount) * 1000) / 10 : 0,
+        }));
+        const funnel = {
+          landingSessions: landingCount,
+          totalTrackedSessions: perSession.size,
+          sessionsWithoutLanding: perSession.size - landingCount,
+          observedStages,
+          lastStage,
+        };
         const totalPages = Math.max(1, Math.ceil(total / pageSize));
         const requestedPage = Number(url.searchParams.get('page') || 1);
         const page = Number.isFinite(requestedPage) ?
@@ -104,7 +151,7 @@ export const Route = createFileRoute('/api/analytics/events')({
         const start = (page - 1) * pageSize;
         return json({
           events: filtered.slice(start, start + pageSize),
-          total, page, pageSize, totalPages, maxStored: 5000, distribution,
+          total, page, pageSize, totalPages, maxStored: 5000, distribution, funnel,
         });
       } catch { return json({ error: 'storage_unavailable' }, 503); }
     },
