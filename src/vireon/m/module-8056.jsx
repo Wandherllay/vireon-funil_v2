@@ -548,8 +548,6 @@ export function Quiz() {
             return;
         }
         setY(false);
-        let e = setTimeout(()=>setY(true), 1000 * W7.quiz.delay);
-        return ()=>clearTimeout(e);
     }, [
         b.kind
     ]);
@@ -664,7 +662,9 @@ export function Quiz() {
         ]);
     }
     if (b.kind === "vsl") {
-        return <div className="min-h-screen bg-white"><div className="pt-4">{EiComponent(<><TD/><h2 className="mt-4 text-center text-[22px] font-bold leading-tight text-[#1a1a1a]">Watch this video before you continue</h2><p className="mb-4 mt-1 text-center text-[13px] text-[#888]">The specialist explains exactly how it works.</p><div className="mb-3 w-full"><o.c variant="quiz"/></div>{Y && <button type="button" onClick={es} className="mt-3 w-full rounded-xl bg-[#2a9d6f] py-3.5 text-[16px] font-semibold text-white">Continue</button>}</>)}</div></div>;
+        return <div className="min-h-screen bg-white"><div className="pt-4">{EiComponent(<><TD/><h2 className="mt-4 text-center text-[22px] font-bold leading-tight text-[#1a1a1a]">Watch this video before you continue</h2><p className="mb-4 mt-1 text-center text-[13px] text-[#888]">The specialist explains exactly how it works.</p><div className="mb-3 w-full"><o.c variant="quiz" onTimeUpdate={(seconds) => {
+            if (seconds >= W7.quiz.delay) setY(true);
+        }}/></div>{Y && <button type="button" onClick={es} className="mt-3 w-full rounded-xl bg-[#2a9d6f] py-3.5 text-[16px] font-semibold text-white">Continue</button>}</>)}</div></div>;
     }
     if (b.kind === "analysis") {
         return <div className="min-h-screen bg-white"><Y1Component onBack={en}/><div className="pb-28 pt-6">{EiComponent(<><TD/><h2 className="mb-4 mt-4 text-center text-[24px] font-bold text-[#1a1a1a]">Your analysis result</h2><p className="mb-1 text-[13px] text-[#888]">Vascular blockage level</p><p className="mb-4 text-[48px] font-extrabold text-[#c62828]">7.4</p><div className="mb-5 w-full rounded-xl border border-[#ffcdd2] bg-[#fff5f5] p-5"><span className="mb-3 inline-block rounded-full bg-[#c62828] px-3 py-1 text-[12px] font-bold text-white">🔴 MODERATE TO HIGH BLOCKAGE</span><p className="mb-2 text-[14px] text-[#1a1a1a]">Based on your answers, we see signs of significant vascular blockage caused by crystallized deposits.</p><p className="mb-3 text-[14px] text-[#1a1a1a]">Your symptoms match a 60% to 89% blockage of blood flow to the penis.</p><p className="text-[14px] font-semibold text-[#2a9d6f]">💡 With the right protocol you can start dissolving those deposits and get your erections back within the first few days.</p></div><div className="mb-5 w-full rounded-xl border-2 border-[#2a9d6f] bg-[#f8fbf9] p-5"><div className="mb-3 flex items-center gap-2"><span className="text-lg">📋</span><h3 className="text-[16px] font-bold text-[#1a1a1a]">Your personalized recipe</h3></div><div className="mb-3 flex flex-col gap-2.5">{[
