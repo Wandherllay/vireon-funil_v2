@@ -105,6 +105,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         src: "https://painel.forcemichaelthompson.app/track.js",
         async: true,
       },
+      // Script oficial de UTMs para preservar os parâmetros do funil no checkout.
+      // A configuração do Pixel Utmify (com ID da conta) é independente.
+      {
+        src: "https://cdn.utmify.com.br/scripts/utms/latest.js",
+        "data-utmify-prevent-xcod-sck": "",
+        "data-utmify-prevent-subids": "",
+        async: true,
+        defer: true,
+      },
     ],
   }),
   shellComponent: RootShell,
