@@ -59,6 +59,86 @@ function EventDistributionChart({ items, total }: { items: EventDistributionItem
   </section>;
 }
 
+type FunnelStep = { key: string; label: string; count: number; percentage: number };
+type SessionFunnel = {
+  landingSessions: number;
+  totalTrackedSessions: number;
+  sessionsWithoutLanding: number;
+  observedStages: FunnelStep[];
+  lastStage: FunnelStep[];
+};
+
+function SessionFunnelPanel({ funnel }: { funnel: SessionFunnel }) {
+  const steps = Array.isArray(funnel.observedStages) ? funnel.observedStages : [];
+  const last = Array.isArray(funnel.lastStage) ? funnel.lastStage : [];
+  const percent = (value: number) => value.toLocaleString('pt-BR', {
+    minimumFractionDigits: 1, maximumFractionDigits: 1,
+  }) + '%';
+  return <section aria-label="Funil de sessões por etapa" style={{
+    borderRadius: 12, border: '1px solid #334155', padding: 20,
+    background: '#1e293b', margin: '20px 0',
+  }}>
+    <h2 style={{ fontSize: 19, fontWeight: 700, marginBottom: 6 }}>
+      Onde os registros dos visitantes terminam
+    </h2>
+    <p style={{ fontSize: 13, color: '#cbd5e1', marginTop: 0 }}>
+      Sessões únicas iniciadas na entrada /v2, considerando todos os registros do filtro aplicado.
+      Contagens não são número de eventos repetidos.
+    </p>
+    {funnel.landingSessions === 0 ?
+      <p style={{ background: '#334155', padding: 12, borderRadius: 6 }}>
+        Nenhuma sessão com entrada /v2 identificada neste conjunto de dados. Confira a instalação do rastreador e limpe o filtro antes de interpretar o abandono.
+      </p> :
+      <>
+        <h3 style={{ fontSize: 15, margin: '15px 0' }}>Avanço observado por etapa</h3>
+        {steps.map((step, index) => {
+          const previous = index > 0 ? steps[index - 1] : null;
+          const withoutNext = previous ? Math.max(previous.count - step.count, 0) : 0;
+          const withoutNextPercent = previous?.count ? (withoutNext / previous.count) * 100 : 0;
+          return <div key={step.key} style={{ marginBottom: 15 }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+              <span style={{ fontWeight: 600, fontSize: 13 }}>{step.label}</span>
+              <strong style={{ fontVariantNumeric: 'tabular-nums' }}>
+                {step.count.toLocaleString('pt-BR')} · {percent(step.percentage)}
+              </strong>
+            </div>
+            <div style={{ background: '#334155', height: 13, borderRadius: 8, overflow: 'hidden', marginTop: 7 }}>
+              <div style={{ width: step.percentage + '%', height: '100%', background: '#38bdf8', borderRadius: 8 }}/>
+            </div>
+            {previous && <div style={{ color: '#fbbf24', fontSize: 12, marginTop: 4 }}>
+              {withoutNext.toLocaleString('pt-BR')} sessão(ões) sem registro dessa etapa ou posterior ({percent(withoutNextPercent)} da anterior).
+            </div>}
+          </div>;
+        })}
+        <h3 style={{ fontSize: 15, margin: '22px 0 10px' }}>Última etapa observada por sessão</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 10 }}>
+          {last.map((step) => <div key={step.key} style={{
+            border: '1px solid #475569', borderRadius: 8, padding: 12,
+          }}>
+            <div style={{ fontSize: 12, color: '#cbd5e1' }}>{step.label}</div>
+            <strong style={{ display: 'block', fontSize: 23, fontVariantNumeric: 'tabular-nums' }}>
+              {step.count.toLocaleString('pt-BR')}
+            </strong>
+            <div style={{ color: '#7dd3fc', fontSize: 13 }}>{percent(step.percentage)} das sessões de entrada</div>
+          </div>)}
+        </div>
+      </>
+    }
+    {funnel.sessionsWithoutLanding > 0 && <p style={{
+      borderLeft: '3px solid #fbbf24', paddingLeft: 12, marginTop: 18, fontSize: 13,
+    }}>
+      Há {funnel.sessionsWithoutLanding.toLocaleString('pt-BR')} sessão(ões) com eventos,
+      mas sem entrada /v2 registrada. Podem ser acessos diretos a outras páginas ou falhas na coleta da entrada.
+    </p>}
+    <p style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.5, marginTop: 18 }}>
+      Atenção: “último registro” não prova abandono. Eventos podem não chegar por bloqueio
+      do navegador, navegação direta ou falha de instalação. “Clique no checkout”
+      não comprova carregamento ou pagamento no checkout externo.
+      Para analisar o funil completo, remova filtros que selecionam apenas um tipo de evento.
+    </p>
+  </section>;
+}
+
 export const Route = createFileRoute('/analytics-admin')({
   component: AnalyticsAdmin,
   head: () => ({ meta: [{ name: 'robots', content: 'noindex,nofollow,noarchive' }, { title: 'Vireon Analytics - Private' }] }),
@@ -66,6 +146,7 @@ export const Route = createFileRoute('/analytics-admin')({
 function AnalyticsAdmin() {
   const [token, setToken] = useState('');
   const [events, setEvents] = useState<EventRow[]>([]);
+  const [sessionFunnel, setSessionFunnel] = useState<SessionFunnel | null>(null);
   const [distribution, setDistribution] = useState<EventDistributionItem[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -94,6 +175,7 @@ function AnalyticsAdmin() {
       if (!response.ok) throw new Error(response.status === 401 ? 'Token inválido.' : 'Falha ao consultar eventos (HTTP ' + response.status + ').');
       const data = await response.json();
       setEvents(Array.isArray(data.events) ? data.events : []);
+      setSessionFunnel(data.funnel && Array.isArray(data.funnel.observedStages) ? data.funnel as SessionFunnel : null);
       setDistribution(Array.isArray(data.distribution) ? data.distribution : []);
       setTotal(Number(data.total) || 0);
       setPage(Number(data.page) || 1);
@@ -150,7 +232,7 @@ function AnalyticsAdmin() {
     <p>Eventos do funil www.forcemichaelthompson.app/v2. O token permanece apenas na memória desta aba.</p>
     <form onSubmit={searchEvents} style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 18, alignItems: 'center' }}>
       <input aria-label="Token administrativo" type="password" autoComplete="off" value={token}
-        onChange={(e) => { setToken(e.target.value); setLoaded(false); setEvents([]); setDistribution([]); setTotal(0); }}
+        onChange={(e) => { setToken(e.target.value); setLoaded(false); setEvents([]); setDistribution([]); setSessionFunnel(null); setTotal(0); }}
         placeholder="Token de administrador" style={{ padding: 12, flex: 1, minWidth: 220, color: '#111', borderRadius: 6 }}/>
       <button type="submit" disabled={!token.trim() || loading}
         style={{ ...actionStyle, ...((!token.trim() || loading) ? mutedStyle : {}) }}>
@@ -179,6 +261,7 @@ function AnalyticsAdmin() {
       </select>
     </form>
     {error && <p role="alert" style={{ color: '#fca5a5' }}>{error}</p>}
+    {loaded && sessionFunnel && <SessionFunnelPanel funnel={sessionFunnel} />}
     {loaded && <EventDistributionChart items={distribution} total={total} />}
     <p>{loaded ? ('Exibindo ' + first + '–' + last + ' de ' + total + ' eventos encontrados.') : 'Consulte os eventos usando seu token administrativo.'}</p>
     <p style={{ fontSize: 13, opacity: 0.75 }}>
