@@ -24,6 +24,44 @@ export const Route = createFileRoute('/api/analytics/events')({
           'upsell_view', 'upsell_accept', 'upsell_decline', 'thank_you_view',
         ]);
         const all = await recentEvents(5000);
+        const now = Date.now();
+        const requestedPeriod = url.searchParams.get('period');
+        const period = ['24h', '7d', '30d', 'all'].includes(requestedPeriod || '')
+          ? requestedPeriod! : '7d';
+        const periodMs: Record<string, number> = {
+          '24h': 24 * 60 * 60 * 1000,
+          '7d': 7 * 24 * 60 * 60 * 1000,
+          '30d': 30 * 24 * 60 * 60 * 1000,
+        };
+        const cutoff = period === 'all' ? null : now - periodMs[period];
+
+        // Health checks are independent of the selected date or search filter.
+        // A successful query confirms storage access, not delivery from every visitor.
+        const trackedWebsite = all.filter((row) =>
+          row && row.source === 'website' &&
+          row.site_host === 'www.forcemichaelthompson.app' &&
+          allowedEvents.has(row.event) &&
+          typeof row.path === 'string' && /^\/v2(?:\/|$)/.test(row.path) &&
+          !/^\/v2\/analytics-admin(?:\/|$)/.test(row.path)
+        );
+        const websiteTimes = trackedWebsite.map((row) =>
+          typeof row.received_at === 'string' ? Date.parse(row.received_at) : NaN
+        ).filter((time) => Number.isFinite(time) && time <= now + 5 * 60 * 1000);
+        const newestWebsiteTime = websiteTimes.length ? Math.max(...websiteTimes) : null;
+        const eventsLastHour = websiteTimes.filter((time) => time >= now - 60 * 60 * 1000).length;
+        const eventsLast24Hours = websiteTimes.filter((time) => time >= now - 24 * 60 * 60 * 1000).length;
+        const health = {
+          storage: 'ok',
+          checkedAt: new Date(now).toISOString(),
+          lastWebsiteEventAt: newestWebsiteTime === null ? null : new Date(newestWebsiteTime).toISOString(),
+          minutesSinceLastWebsiteEvent: newestWebsiteTime === null ? null
+            : Math.max(0, Math.floor((now - newestWebsiteTime) / 60000)),
+          eventsLastHour,
+          eventsLast24Hours,
+          activity: newestWebsiteTime === null ? 'none'
+            : eventsLastHour > 0 ? 'recent' : 'quiet',
+        };
+
         const filtered = all.filter((row) => {
           if (!row || typeof row !== 'object') return false;
           if (row.source === 'website') {
@@ -31,6 +69,13 @@ export const Route = createFileRoute('/api/analytics/events')({
             if (row.event === 'page_view' && row.path !== '/v2' && row.path !== '/v2/') return false;
           } else if (row.source !== 'perfectpay') {
             return false;
+          }
+          if (cutoff !== null) {
+            const received = typeof row.received_at === 'string'
+              ? Date.parse(row.received_at) : NaN;
+            if (!Number.isFinite(received) || received < cutoff || received > now + 5 * 60 * 1000) {
+              return false;
+            }
           }
           if (!search) return true;
           return [
@@ -134,6 +179,20 @@ export const Route = createFileRoute('/api/analytics/events')({
           ...stage,
           percentage: landingCount ? Math.round((stage.count / landingCount) * 1000) / 10 : 0,
         }));
+        const observedWithRates = observedStages.map((stage, index) => {
+          const previous = index > 0 ? observedStages[index - 1] : null;
+          const missing = previous ? Math.max(0, previous.count - stage.count) : 0;
+          return {
+            ...stage,
+            advanceFromPrevious: previous
+              ? (previous.count ? Math.round((stage.count / previous.count) * 1000) / 10 : null)
+              : 100,
+            missingFromPrevious: missing,
+            missingFromPreviousPercentage: previous
+              ? (previous.count ? Math.round((missing / previous.count) * 1000) / 10 : null)
+              : 0,
+          };
+        });
         const lastStage = [
           { key: 'landing', label: 'Último registro: entrada /v2', count: landingSessions.filter((events) => !hasQuizOrLater(events)).length },
           { key: 'quiz', label: 'Último registro: início do quiz', count: landingSessions.filter((events) => hasQuizOrLater(events) && !hasQuizMidpointOrLater(events)).length },
@@ -149,7 +208,7 @@ export const Route = createFileRoute('/api/analytics/events')({
           landingSessions: landingCount,
           totalTrackedSessions: perSession.size,
           sessionsWithoutLanding: perSession.size - landingCount,
-          observedStages,
+          observedStages: observedWithRates,
           lastStage,
         };
         const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -159,7 +218,7 @@ export const Route = createFileRoute('/api/analytics/events')({
         const start = (page - 1) * pageSize;
         return json({
           events: filtered.slice(start, start + pageSize),
-          total, page, pageSize, totalPages, maxStored: 5000, distribution, funnel,
+          total, page, pageSize, totalPages, maxStored: 5000, distribution, funnel, health, period,
         });
       } catch { return json({ error: 'storage_unavailable' }, 503); }
     },
