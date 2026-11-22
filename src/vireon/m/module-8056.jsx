@@ -10,25 +10,24 @@ import * as n from "react";
 let i = [
     {
         id: "symptom",
-        title: "Which of these problems describes your current situation?",
-        help: "Your symptoms tell us which complementary ingredient you need.",
-        multiple: true,
+        title: "What would you most like to improve?",
+        help: "Choose the option that feels closest to your experience.",
         options: [
-            "I lose my erection before finishing",
-            "I don't have the firmness I used to",
-            "I notice reduced size or girth",
-            "Less desire than before"
+            "Stronger, more consistent firmness",
+            "Feeling more confident during intimacy",
+            "Maintaining firmness for longer",
+            "Understanding changes in desire"
         ]
     },
     {
         id: "duration",
-        title: "How long have you been noticing these changes?",
-        help: "This helps us calculate the strength of your first dose.",
+        title: "When did you first notice a change?",
+        help: "A quick estimate is enough.",
         options: [
-            "Less than 6 months",
-            "6 months to 2 years",
-            "2 to 5 years",
-            "More than 5 years"
+            "Recently (within 6 months)",
+            "6 to 12 months ago",
+            "1 to 3 years ago",
+            "More than 3 years ago"
         ]
     },
     {
@@ -145,10 +144,10 @@ let i = [
     }
 ];
 let r = [
-    "25 - 35 years",
-    "36 - 50 years",
-    "51 - 65 years",
-    "65+ years"
+    "18–39 years",
+    "40–50 years",
+    "51–60 years",
+    "61+ years"
 ];
 let m = (e)=>i.findIndex((t)=>t.id === e);
 let u = [
@@ -236,9 +235,6 @@ export function Quiz() {
     });
     let [w, setW] = n.useState({});
     let [k, setK] = n.useState(null);
-    let [C, setC] = n.useState(45);
-    let [P, setP] = n.useState(78);
-    let [S, setS] = n.useState("lb");
     let [M, setM] = n.useState(false);
     let [L, setL] = n.useState(0);
     let [W, setW_1] = n.useState(0);
@@ -258,27 +254,6 @@ export function Quiz() {
     let V = b.kind === "question" ? b.index : -1;
     let Q = V >= 0 ? i[V] : null;
     let J = Q && (e = w[Q.id]) !== null && e !== undefined ? e : [];
-    let XRef = n.useRef(null);
-    let GRef = n.useRef(null);
-    let $ = n.useCallback(()=>{
-        if (XRef.current !== null) {
-            window.clearTimeout(XRef.current);
-        }
-        if (GRef.current !== null) {
-            window.clearInterval(GRef.current);
-        }
-        XRef.current = null;
-        GRef.current = null;
-    }, []);
-    let K = n.useCallback((e, t)=>{
-        t(e);
-        XRef.current = window.setTimeout(()=>{
-            GRef.current = window.setInterval(()=>t(e), 75);
-        }, 400);
-    }, []);
-    n.useEffect(()=>$, [
-        $
-    ]);
     let Z = ((e)=>{
         switch(e.kind){
             case "age":
@@ -321,18 +296,12 @@ export function Quiz() {
         try {
             sessionStorage.setItem("vireon_answers", JSON.stringify({
                 ...w,
-                ageBand: k,
-                age: C,
-                weight: P,
-                unit: S
+                ageBand: k
             }));
         } catch (e) {}
     }, [
         w,
-        k,
-        C,
-        P,
-        S
+        k
     ]);
     let ea = n.useCallback(()=>{
         et();
@@ -568,33 +537,38 @@ export function Quiz() {
         width: `${ee}%`
     }}/></div></div></div></div>;
     if (b.kind === "age") {
-        let e = S === "lb" ? Math.round(2.20462 * P) : P;
-        let t = S === "lb" ? Math.round(88.1848) : 40;
-        let a = S === "lb" ? Math.round(440.924) : 200;
-        let n = (e)=>setP((s)=>{
-                let n = Math.min(a, Math.max(t, (S === "lb" ? Math.round(2.20462 * s) : s) + e));
-                if (S === "lb") {
-                    return n / 2.20462;
-                }
-                return n;
-            });
-        return <div className="min-h-screen bg-white">{eo}<div className="pt-24">{EiComponent(<><h2 className="mb-1 text-center text-[24px] font-bold leading-tight text-[#1a1a1a]">What is your age and weight?</h2><p className="mb-5 text-center text-[13px] leading-relaxed text-[#888]">This determines the exact baking soda concentration in your formula.</p><div className="mb-4 flex flex-col gap-2">{r.map((e)=>{
-            let t = k === e;
-            return <button key={e} type="button" onClick={()=>setK(e)} className={`flex items-center gap-3 rounded-xl border px-5 py-3.5 text-left transition-all duration-200 ${t ? "border-2 border-[#2a9d6f] bg-[#f0faf5]" : "border-[#e8e8e8]"}`}><span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 ${t ? "border-[#2a9d6f] bg-[#2a9d6f]" : "border-[#ccc]"}`}>{t && <span className="text-xs text-white">✓</span>}</span><span className="text-[15px] font-medium text-[#1a1a1a]">{e}</span></button>;
-        })}</div><div className="mt-2"><p className="mb-2 text-center text-[13px] font-medium text-[#666]">Prefer to give your exact age?</p><div className="flex items-center justify-between gap-3 rounded-2xl border-2 border-[#e8f2ec] bg-[#f8fbf9] px-3 py-4"><button type="button" aria-label="Decrease" disabled={C <= 18} onPointerDown={()=>C > 18 && K(-1, (e)=>setC((t)=>Math.max(18, t + e)))} onPointerUp={$} onPointerLeave={$} onPointerCancel={$} className={`flex h-12 w-12 select-none items-center justify-center rounded-full border-2 border-[#2a9d6f] text-2xl font-bold transition-all ${C <= 18 ? "cursor-not-allowed bg-[#e8e8e8] text-[#aaa]" : "bg-white text-[#2a9d6f] active:scale-90"}`}>−</button><div className="flex flex-1 items-baseline justify-center gap-1.5"><span className="text-[40px] font-extrabold leading-none tabular-nums text-[#1a1a1a]">{C}</span><span className="text-[15px] font-medium text-[#666]">years</span></div><button type="button" aria-label="Increase" disabled={C >= 95} onPointerDown={()=>C < 95 && K(1, (e)=>setC((t)=>Math.min(95, t + e)))} onPointerUp={$} onPointerLeave={$} onPointerCancel={$} className={`flex h-12 w-12 select-none items-center justify-center rounded-full text-2xl font-bold transition-all ${C >= 95 ? "cursor-not-allowed bg-[#e8e8e8] text-[#aaa]" : "bg-[#2a9d6f] text-white active:scale-90"}`}>+</button></div></div><div className="mt-5"><p className="mb-2 text-center text-[13px] font-medium text-[#666]">Your current weight</p><div className="mb-2 flex items-center justify-center"><div className="inline-flex rounded-full border border-[#e8e8e8] bg-[#f0f3f1] p-1">{[
-            "lb",
-            "kg"
-        ].map((e)=><button key={e} type="button" onClick={()=>setS(e)} aria-pressed={S === e} className={`min-w-[64px] rounded-full px-4 py-1.5 text-[13px] font-semibold transition-all ${S === e ? "bg-[#2a9d6f] text-white shadow-sm" : "text-[#666]"}`}>{e}</button>)}</div></div><div className="flex items-center justify-between gap-3 rounded-2xl border-2 border-[#e8f2ec] bg-[#f8fbf9] px-3 py-4"><button type="button" aria-label="Decrease" disabled={e <= t} onPointerDown={()=>e > t && K(-1, n)} onPointerUp={$} onPointerLeave={$} onPointerCancel={$} className={`flex h-12 w-12 select-none items-center justify-center rounded-full border-2 border-[#2a9d6f] text-2xl font-bold transition-all ${e <= t ? "cursor-not-allowed bg-[#e8e8e8] text-[#aaa]" : "bg-white text-[#2a9d6f] active:scale-90"}`}>−</button><div className="flex flex-1 flex-col items-center"><div className="flex items-baseline justify-center gap-1.5"><span className="text-[40px] font-extrabold leading-none tabular-nums text-[#1a1a1a]">{e}</span><span className="text-[15px] font-medium text-[#666]">{S}</span></div><span className="mt-1 text-[12px] tabular-nums text-[#8a8a8a]">≈ {S === "lb" ? Math.round(P) : Math.round(2.20462 * P)} {S === "lb" ? "kg" : "lb"}</span></div><button type="button" aria-label="Increase" disabled={e >= a} onPointerDown={()=>e < a && K(1, n)} onPointerUp={$} onPointerLeave={$} onPointerCancel={$} className={`flex h-12 w-12 select-none items-center justify-center rounded-full text-2xl font-bold transition-all ${e >= a ? "cursor-not-allowed bg-[#e8e8e8] text-[#aaa]" : "bg-[#2a9d6f] text-white active:scale-90"}`}>+</button></div></div></>)}</div><div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#e8e8e8] bg-white px-6 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]"><div className="mx-auto max-w-[440px]"><button type="button" onClick={()=>{
-            let t = `${k ?? `${C} years`} · ${e} ${S}`;
-            setW((e)=>({
-                    ...e,
-                    age_weight: [
-                        t
-                    ]
-                }));
-            g(2, t);
-            es();
-        }} className="w-full rounded-xl bg-[#2a9d6f] py-3.5 text-[16px] font-semibold text-white transition-colors hover:bg-[#238c5c]">Continue</button></div></div></div>;
+        return <div className="min-h-screen bg-white">
+            {eo}
+            <div className="pt-24">
+                {EiComponent(<div className="w-full">
+                    <h2 className="mb-1 text-center text-[24px] font-bold leading-tight text-[#1a1a1a]">What is your age range?</h2>
+                    <p className="mb-5 text-center text-[13px] leading-relaxed text-[#888]">
+                        Just one tap to get started. No exact age or weight needed.
+                    </p>
+                    <div className="flex flex-col gap-3" role="radiogroup" aria-label="Age range">
+                        {r.map((range) => {
+                            const selected = k === range;
+                            return <button key={range} type="button"
+                                aria-pressed={selected}
+                                onClick={() => {
+                                    setK(range);
+                                    setW((answers) => ({ ...answers, age_band: [range] }));
+                                    g(2, range);
+                                    window.vireonTrack?.("quiz_start", "first_answer");
+                                    es();
+                                }}
+                                className={`flex w-full items-center gap-3 rounded-xl border px-5 py-4 text-left transition-colors duration-150 ${selected ? "border-2 border-[#2a9d6f] bg-[#f0faf5]" : "border-[#e8e8e8] bg-white hover:border-[#2a9d6f] hover:bg-[#f8fbf9]"}`}>
+                                <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 ${selected ? "border-[#2a9d6f] bg-[#2a9d6f]" : "border-[#ccc]"}`}>
+                                    {selected && <span className="text-xs text-white">✓</span>}
+                                </span>
+                                <span className="flex-1 text-[16px] font-semibold text-[#1a1a1a]">{range}</span>
+                                <span className="text-lg text-[#2a9d6f]">›</span>
+                            </button>;
+                        })}
+                    </div>
+                </div>)}
+            </div>
+        </div>;
     }
     let EdComponent = (e, t, a, n)=><div className="min-h-screen bg-white"><Y1Component onBack={en}/><div className="flex min-h-[60vh] flex-col items-center justify-center px-6 py-10 pt-16"><div className="mx-auto flex w-full max-w-[440px] flex-col items-center"><div className="mb-5 grid h-16 w-16 place-items-center rounded-full bg-[#2a9d6f] transition-transform duration-300"><span className="text-3xl text-white">✓</span></div><h2 className="mb-1 text-center text-[22px] font-bold text-[#1a1a1a]" style={{
             letterSpacing: "-0.02em"
@@ -822,7 +796,7 @@ export function Quiz() {
                     setH(true);
                     return;
                 }
-                setTimeout(es, 500);
+                setTimeout(es, Q.id === "symptom" || Q.id === "duration" ? 200 : 500);
             })(e)} aria-pressed={n} className={`flex items-center gap-3 rounded-xl border p-4 text-left transition-all duration-200 ${n ? "border-2 border-[#2a9d6f] bg-[#f0faf5]" : "border-[#e8e8e8] hover:border-[#2a9d6f] hover:bg-[#f8fbf9]"}`} style={{
             padding: "16px 20px"
         }}><span className={`grid h-5 w-5 shrink-0 place-items-center ${Q.multiple ? "rounded-sm" : "rounded-full"} border-2 ${n ? "border-[#2a9d6f] bg-[#2a9d6f]" : "border-[#ccc]"}`}>{n && <span className="text-xs text-white">✓</span>}</span><span className="flex-1 text-[15px] font-medium text-[#1a1a1a]">{Q.emojis?.[t] ? `${Q.emojis[t]} ` : ""}{e}</span>{Q.id === "duration" && <span className="shrink-0 text-lg text-[#ccc]">›</span>}</button>;
