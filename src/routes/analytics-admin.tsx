@@ -152,6 +152,7 @@ function AnalyticsAdmin() {
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [showCharts, setShowCharts] = useState(true);
   const [filter, setFilter] = useState('');
   const [appliedFilter, setAppliedFilter] = useState('');
   const [page, setPage] = useState(1);
@@ -261,8 +262,17 @@ function AnalyticsAdmin() {
       </select>
     </form>
     {error && <p role="alert" style={{ color: '#fca5a5' }}>{error}</p>}
-    {loaded && sessionFunnel && <SessionFunnelPanel funnel={sessionFunnel} />}
-    {loaded && <EventDistributionChart items={distribution} total={total} />}
+    <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '14px 0' }}>
+      <button type="button" aria-expanded={showCharts} aria-controls="vireon-charts"
+        onClick={() => setShowCharts((visible) => !visible)}
+        style={{ ...actionStyle, background: '#334155', border: '1px solid #64748b' }}>
+        {showCharts ? 'Ocultar gráficos' : 'Mostrar gráficos'}
+      </button>
+    </div>
+    <div id="vireon-charts" hidden={!showCharts}>
+      {loaded && sessionFunnel && <SessionFunnelPanel funnel={sessionFunnel} />}
+      {loaded && <EventDistributionChart items={distribution} total={total} />}
+    </div>
     <p>{loaded ? ('Exibindo ' + first + '–' + last + ' de ' + total + ' eventos encontrados.') : 'Consulte os eventos usando seu token administrativo.'}</p>
     <p style={{ fontSize: 13, opacity: 0.75 }}>
       Até 5.000 eventos recentes retidos pelo banco. A exportação CSV inclui todos os resultados do filtro aplicado, não apenas a página atual.
