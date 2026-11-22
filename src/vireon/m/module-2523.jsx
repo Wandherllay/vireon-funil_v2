@@ -7,7 +7,7 @@ export let W7 = {
         src:"/v2/media/quiz.mp4",
         poster: "/v2/media/quiz-cover.jpg",
         aspect: 133.33333333333331,
-        delay: 75
+        delay: 5
     },
     offer: {
         account: "d331dfa7-f65a-427e-934f-2c0eb96fde35",
