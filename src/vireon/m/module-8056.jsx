@@ -246,6 +246,15 @@ export function Quiz() {
     let [H, setH] = n.useState(false);
     let [Y, setY] = n.useState(false);
     let [R, setR] = n.useState(false);
+    // Only two additional milestones: after question 6/11 and after question 11/11.
+    // Never transmit answers. The central tracker deduplicates per browser session.
+    n.useEffect(()=>{
+        if (b.kind === "confirmed") {
+            window.vireonTrack?.("quiz_midpoint", "6_of_11");
+        } else if (b.kind === "calibrated") {
+            window.vireonTrack?.("quiz_complete", "11_of_11");
+        }
+    }, [b.kind]);
     let V = b.kind === "question" ? b.index : -1;
     let Q = V >= 0 ? i[V] : null;
     let J = Q && (e = w[Q.id]) !== null && e !== undefined ? e : [];
