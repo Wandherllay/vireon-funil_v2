@@ -75,6 +75,28 @@ export const Route = createFileRoute('/api/analytics/events')({
         const requestedPageSize = Number(url.searchParams.get('pageSize') || 500);
         const pageSize = [100, 250, 500, 1000].includes(requestedPageSize) ? requestedPageSize : 500;
         const total = filtered.length;
+        // Counts cover all matching events, not just the current page.
+        // Percentages describe event distribution, not visitor conversion.
+        const counts = new Map<string, number>();
+        for (const row of filtered) {
+          const name = typeof row.event === 'string' && row.event ? row.event : 'other';
+          counts.set(name, (counts.get(name) || 0) + 1);
+        }
+        const eventOrder = [
+          'page_view', 'quiz_start', 'offer_view', 'checkout_click',
+          'upsell_view', 'upsell_accept', 'upsell_decline', 'thank_you_view',
+          'payment_status',
+        ];
+        const names = [...eventOrder, ...Array.from(counts.keys()).filter((name) => !eventOrder.includes(name))];
+        const distribution = names
+          .filter((name) => (counts.get(name) || 0) > 0)
+          .map((event) => {
+            const count = counts.get(event) || 0;
+            return {
+              event, count,
+              percentage: total ? Math.round((count / total) * 1000) / 10 : 0,
+            };
+          });
         const totalPages = Math.max(1, Math.ceil(total / pageSize));
         const requestedPage = Number(url.searchParams.get('page') || 1);
         const page = Number.isFinite(requestedPage) ?
@@ -82,7 +104,7 @@ export const Route = createFileRoute('/api/analytics/events')({
         const start = (page - 1) * pageSize;
         return json({
           events: filtered.slice(start, start + pageSize),
-          total, page, pageSize, totalPages, maxStored: 5000,
+          total, page, pageSize, totalPages, maxStored: 5000, distribution,
         });
       } catch { return json({ error: 'storage_unavailable' }, 503); }
     },
