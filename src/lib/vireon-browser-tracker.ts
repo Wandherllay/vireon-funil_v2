@@ -17,7 +17,13 @@ export function getFunnelDiagnostics() {
   return { ...status };
 }
 
-const isFunnelPage = (path: string) => (path === '/v2' || path.startsWith('/v2/')) && !(path === '/v2/analytics-admin' || path.startsWith('/v2/analytics-admin/'));
+const TRACKED_HOST = 'www.forcemichaelthompson.app';
+const COLLECTOR_URL = 'https://vireon-funil-v2.vercel.app/v2/api/analytics/collect';
+const isFunnelPage = (path: string) =>
+  typeof window !== 'undefined' &&
+  window.location.hostname === TRACKED_HOST &&
+  (path === '/v2' || path.startsWith('/v2/')) &&
+  !(path === '/v2/analytics-admin' || path.startsWith('/v2/analytics-admin/'));
 let sessionId = '';
 let utmSource = '';
 let utmCampaign = '';
@@ -73,12 +79,14 @@ export function sendFunnelEvent(event: EventName, detail = '') {
     utm_campaign: utmCampaign,
   });
   // Fetch makes failures observable in DevTools; keepalive supports redirects.
-  void fetch('/v2/api/analytics/collect', {
+  // Collect directly in the private Vercel project, regardless of /v2 proxy routing.
+  void fetch(COLLECTOR_URL, {
     method: 'POST',
+    mode: 'cors',
     headers: { 'Content-Type': 'application/json' },
     body,
     keepalive: true,
-    credentials: 'same-origin',
+    credentials: 'omit',
   }).then((response) => {
     status.lastHttp = String(response.status);
     renderDiagnostics();
