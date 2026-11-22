@@ -22,7 +22,7 @@ export async function appendEvent(record: Record<string, unknown>) {
   await command('EXPIRE', key, 60 * 60 * 24 * 30);
 }
 export async function recentEvents(limit = 200) {
-  const rows = (await command('LRANGE', 'vireon:v2:events', 0, Math.min(limit, 500) - 1)) as string[];
+  const rows = (await command('LRANGE', 'vireon:v2:events', 0, Math.min(Math.max(Math.floor(limit), 1), 5000) - 1)) as string[];
   return rows.map((row) => JSON.parse(row));
 }
 export function json(data: unknown, status = 200) {
