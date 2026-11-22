@@ -17,14 +17,6 @@ export const Route = createFileRoute('/api/analytics/events')({
       try {
         const url = new URL(request.url);
         const search = (url.searchParams.get('q') || '').trim().slice(0, 120).toLowerCase();
-        const requestedVisitorType = url.searchParams.get('visitorType');
-        const visitorFilter = ['real', 'test', 'unclassified', 'all'].includes(requestedVisitorType || '')
-          ? requestedVisitorType! : 'real';
-        const classifyRow = (row: Record<string, any>) => row.source !== 'website'
-          ? 'unclassified'
-          : row.visitor_type === 'test' ? 'test'
-          : row.visitor_type === 'real' ? 'real'
-          : 'unclassified';
         // Redis already retains up to 5,000 entries. Filter before paginating to
         // avoid misleading counts and to exclude events from the Vercel test domain.
         const allowedEvents = new Set([
@@ -48,7 +40,6 @@ export const Route = createFileRoute('/api/analytics/events')({
         const trackedWebsite = all.filter((row) =>
           row && row.source === 'website' &&
           row.site_host === 'www.forcemichaelthompson.app' &&
-          row.visitor_type === 'real' &&
           allowedEvents.has(row.event) &&
           typeof row.path === 'string' && /^\/v2(?:\/|$)/.test(row.path) &&
           !/^\/v2\/analytics-admin(?:\/|$)/.test(row.path)
@@ -71,7 +62,7 @@ export const Route = createFileRoute('/api/analytics/events')({
             : eventsLastHour > 0 ? 'recent' : 'quiet',
         };
 
-        const eligible = all.filter((row) => {
+        const filtered = all.filter((row) => {
           if (!row || typeof row !== 'object') return false;
           if (row.source === 'website') {
             if (row.site_host !== 'www.forcemichaelthompson.app' || !allowedEvents.has(row.event)) return false;
@@ -86,16 +77,6 @@ export const Route = createFileRoute('/api/analytics/events')({
               return false;
             }
           }
-          return true;
-        });
-        // Counts are for the selected period before type/search filters.
-        const visitorSummary = { real: 0, test: 0, unclassified: 0 };
-        for (const row of eligible) {
-          const category = classifyRow(row) as keyof typeof visitorSummary;
-          visitorSummary[category] += 1;
-        }
-        const filtered = eligible.filter((row) => {
-          if (visitorFilter !== 'all' && classifyRow(row) !== visitorFilter) return false;
           if (!search) return true;
           return [
             row.received_at, row.source, row.event, row.session_id, row.path, row.step,
@@ -107,7 +88,6 @@ export const Route = createFileRoute('/api/analytics/events')({
         if (url.searchParams.get('format') === 'csv') {
           const fields: Array<[string, string]> = [
             ['Horário (UTC)', 'received_at'], ['Origem', 'source'],
-            ['Classificação', 'visitor_type'],
             ['Evento', 'event'], ['Sessão', 'session_id'],
             ['Página', 'path'], ['Etapa', 'step'],
             ['Produto', 'product_name'], ['Código do produto', 'product_code'],
@@ -123,9 +103,7 @@ export const Route = createFileRoute('/api/analytics/events')({
           };
           const csv = [
             fields.map(([label]) => cell(label)).join(';'),
-            ...filtered.map((row) => fields.map(([, key]) =>
-              cell(key === 'visitor_type' ? classifyRow(row) : row[key])
-            ).join(';')),
+            ...filtered.map((row) => fields.map(([, key]) => cell(row[key])).join(';')),
           ].join('\r\n');
           const filename = 'vireon-v2-eventos-' + new Date().toISOString().slice(0, 10) + '.csv';
           return new Response('\uFEFF' + csv, {
@@ -241,7 +219,6 @@ export const Route = createFileRoute('/api/analytics/events')({
         return json({
           events: filtered.slice(start, start + pageSize),
           total, page, pageSize, totalPages, maxStored: 5000, distribution, funnel, health, period,
-          visitorFilter, visitorSummary,
         });
       } catch { return json({ error: 'storage_unavailable' }, 503); }
     },
