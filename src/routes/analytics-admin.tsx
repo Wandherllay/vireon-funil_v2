@@ -6,6 +6,59 @@ type EventRow = {
   product_name?: string; order_code?: string; sale_status_enum?: number;
   utm_source?: string; utm_campaign?: string; received_at?: string;
 };
+type EventDistributionItem = { event: string; count: number; percentage: number };
+
+const EVENT_LABELS: Record<string, string> = {
+  page_view: 'Visitas ao funil',
+  quiz_start: 'Inícios do quiz',
+  offer_view: 'Visualizações da oferta',
+  checkout_click: 'Cliques no checkout',
+  upsell_view: 'Visualizações de upsell',
+  upsell_accept: 'Aceites de upsell',
+  upsell_decline: 'Recusas de upsell',
+  thank_you_view: 'Página de obrigado',
+  payment_status: 'Notificações de pagamento',
+};
+
+function EventDistributionChart({ items, total }: { items: EventDistributionItem[]; total: number }) {
+  return <section aria-label="Gráfico percentual dos eventos" style={{
+    background: '#1e293b', border: '1px solid #334155', borderRadius: 12,
+    padding: '18px 20px', margin: '18px 0 22px',
+  }}>
+    <h2 style={{ fontSize: 19, fontWeight: 700, margin: '0 0 7px' }}>
+      Distribuição dos eventos (%)
+    </h2>
+    <p style={{ color: '#cbd5e1', fontSize: 13, margin: '0 0 18px' }}>
+      Percentual calculado sobre os {total.toLocaleString('pt-BR')} eventos encontrados em todo o filtro, não apenas sobre a página exibida.
+    </p>
+    {total === 0 ? <p style={{ color: '#94a3b8' }}>Nenhum evento para exibir no gráfico.</p> :
+      items.map((item) => <div key={item.event} style={{
+        display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 13,
+      }}>
+        <span title={item.event} style={{ width: 200, maxWidth: '100%', fontSize: 13, fontWeight: 600 }}>
+          {EVENT_LABELS[item.event] || item.event}
+        </span>
+        <div role="meter" aria-label={EVENT_LABELS[item.event] || item.event}
+          aria-valuemin={0} aria-valuemax={100} aria-valuenow={item.percentage}
+          style={{ flex: '1 1 180px', height: 16, background: '#334155', borderRadius: 10, overflow: 'hidden' }}>
+          <div style={{
+            height: '100%', width: item.percentage + '%', borderRadius: 10,
+            background: 'linear-gradient(90deg, #2563eb, #38bdf8)',
+          }}/>
+        </div>
+        <span style={{ textAlign: 'right', minWidth: 120, fontSize: 13, fontVariantNumeric: 'tabular-nums' }}>
+          <strong>{item.percentage.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%</strong>
+          <span style={{ color: '#cbd5e1' }}> · {item.count.toLocaleString('pt-BR')}</span>
+        </span>
+      </div>)
+    }
+    <p style={{ color: '#94a3b8', fontSize: 12, margin: '13px 0 0' }}>
+      Esse gráfico mostra a participação de cada tipo de evento no total; não é taxa de conversão por visitante.
+      Notificações de pagamento não representam necessariamente vendas aprovadas.
+    </p>
+  </section>;
+}
+
 export const Route = createFileRoute('/analytics-admin')({
   component: AnalyticsAdmin,
   head: () => ({ meta: [{ name: 'robots', content: 'noindex,nofollow,noarchive' }, { title: 'Vireon Analytics - Private' }] }),
@@ -13,6 +66,7 @@ export const Route = createFileRoute('/analytics-admin')({
 function AnalyticsAdmin() {
   const [token, setToken] = useState('');
   const [events, setEvents] = useState<EventRow[]>([]);
+  const [distribution, setDistribution] = useState<EventDistributionItem[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -40,6 +94,7 @@ function AnalyticsAdmin() {
       if (!response.ok) throw new Error(response.status === 401 ? 'Token inválido.' : 'Falha ao consultar eventos (HTTP ' + response.status + ').');
       const data = await response.json();
       setEvents(Array.isArray(data.events) ? data.events : []);
+      setDistribution(Array.isArray(data.distribution) ? data.distribution : []);
       setTotal(Number(data.total) || 0);
       setPage(Number(data.page) || 1);
       setPageSize(Number(data.pageSize) || size);
@@ -95,7 +150,7 @@ function AnalyticsAdmin() {
     <p>Eventos do funil www.forcemichaelthompson.app/v2. O token permanece apenas na memória desta aba.</p>
     <form onSubmit={searchEvents} style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 18, alignItems: 'center' }}>
       <input aria-label="Token administrativo" type="password" autoComplete="off" value={token}
-        onChange={(e) => { setToken(e.target.value); setLoaded(false); setEvents([]); setTotal(0); }}
+        onChange={(e) => { setToken(e.target.value); setLoaded(false); setEvents([]); setDistribution([]); setTotal(0); }}
         placeholder="Token de administrador" style={{ padding: 12, flex: 1, minWidth: 220, color: '#111', borderRadius: 6 }}/>
       <button type="submit" disabled={!token.trim() || loading}
         style={{ ...actionStyle, ...((!token.trim() || loading) ? mutedStyle : {}) }}>
@@ -124,6 +179,7 @@ function AnalyticsAdmin() {
       </select>
     </form>
     {error && <p role="alert" style={{ color: '#fca5a5' }}>{error}</p>}
+    {loaded && <EventDistributionChart items={distribution} total={total} />}
     <p>{loaded ? ('Exibindo ' + first + '–' + last + ' de ' + total + ' eventos encontrados.') : 'Consulte os eventos usando seu token administrativo.'}</p>
     <p style={{ fontSize: 13, opacity: 0.75 }}>
       Até 5.000 eventos recentes retidos pelo banco. A exportação CSV inclui todos os resultados do filtro aplicado, não apenas a página atual.
