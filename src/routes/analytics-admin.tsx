@@ -28,22 +28,22 @@ function TrackingHealthPanel({ health }: { health: TrackingHealth }) {
     background: '#1e293b', border: '1px solid #475569',
   }}>
     <h2 style={{ fontSize: 17, margin: '0 0 10px' }}>Diagnóstico do rastreamento</h2>
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
-      <div style={{ flex: '1 1 190px' }}>
-        <div style={{ color: '#cbd5e1', fontSize: 12 }}>Consulta ao banco</div>
-        <strong style={{ color: '#86efac' }}>Respondendo</strong>
+    <div className="va-panel-metrics">
+      <div className="va-panel-metric">
+        <div className="va-metric-label">Consulta ao banco</div>
+        <div className="va-metric-value" style={{ color: '#86efac' }}>Respondendo</div>
       </div>
-      <div style={{ flex: '2 1 240px' }}>
-        <div style={{ color: '#cbd5e1', fontSize: 12 }}>Último evento do /v2 recebido</div>
-        <strong>{last}</strong>
+      <div className="va-panel-metric">
+        <div className="va-metric-label">Último evento do /v2 recebido</div>
+        <div className="va-metric-value">{last}</div>
       </div>
-      <div style={{ flex: '1 1 150px' }}>
-        <div style={{ color: '#cbd5e1', fontSize: 12 }}>Eventos na última hora</div>
-        <strong>{health.eventsLastHour.toLocaleString('pt-BR')}</strong>
+      <div className="va-panel-metric">
+        <div className="va-metric-label">Eventos na última hora</div>
+        <div className="va-metric-value">{health.eventsLastHour.toLocaleString('pt-BR')}</div>
       </div>
-      <div style={{ flex: '1 1 150px' }}>
-        <div style={{ color: '#cbd5e1', fontSize: 12 }}>Eventos em 24 horas</div>
-        <strong>{health.eventsLast24Hours.toLocaleString('pt-BR')}</strong>
+      <div className="va-panel-metric">
+        <div className="va-metric-label">Eventos em 24 horas</div>
+        <div className="va-metric-value">{health.eventsLast24Hours.toLocaleString('pt-BR')}</div>
       </div>
     </div>
     <p style={{ color: health.activity === 'recent' ? '#86efac' : '#fbbf24', margin: '12px 0 4px', fontSize: 13, fontWeight: 600 }}>
@@ -296,55 +296,183 @@ function AnalyticsAdmin() {
   const disableBack = !loaded || loading || page <= 1;
   const disableNext = !loaded || loading || page >= totalPages;
 
-  return <main style={{ maxWidth: 1150, margin: '0 auto', padding: 24, minHeight: '100vh', fontFamily: 'Arial,sans-serif', color: '#e8eef7', background: '#111827' }}>
-    <h1>Vireon Analytics — /v2</h1>
+  return <main id="vireon-admin" style={{ maxWidth: 1200, margin: '0 auto', padding: '28px 24px', minHeight: '100vh', fontFamily: 'Arial,Helvetica,sans-serif', color: '#f1f5f9', background: '#111827' }}>
+    <style>{`
+      #vireon-admin .va-toolbar-section {
+        border: 1px solid #465770;
+        background: #1c293b;
+        border-radius: 14px;
+        padding: 20px;
+        margin: 20px 0;
+        box-shadow: 0 10px 24px rgba(0,0,0,.14);
+      }
+      #vireon-admin .va-toolbar { display: grid; align-items: end; gap: 16px; }
+      #vireon-admin .va-toolbar-auth { grid-template-columns: minmax(250px,1fr) auto; }
+      #vireon-admin .va-toolbar-filters {
+        border-top: 1px solid #475569;
+        margin-top: 20px;
+        padding-top: 20px;
+        grid-template-columns: minmax(235px,2.2fr) minmax(190px,1.1fr) minmax(165px,1fr) auto;
+      }
+      #vireon-admin .va-control-group { display: flex; flex-direction: column; min-width: 0; gap: 8px; }
+      #vireon-admin .va-label {
+        color: #f8fafc;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: .01em;
+        line-height: 1.4;
+      }
+      #vireon-admin .va-field {
+        display: block;
+        width: 100%;
+        min-width: 0;
+        height: 48px;
+        box-sizing: border-box;
+        border: 1.5px solid #8293aa;
+        border-radius: 9px;
+        padding: 0 14px;
+        background-color: #0c192b;
+        color: #ffffff;
+        font-size: 15px;
+        font-weight: 500;
+        line-height: 1.3;
+        color-scheme: dark;
+        opacity: 1;
+        transition: border-color .16s ease, box-shadow .16s ease, background-color .16s ease;
+      }
+      #vireon-admin .va-field::placeholder { color: #b6c4d6; opacity: 1; }
+      #vireon-admin .va-field:focus,
+      #vireon-admin .va-field:focus-visible {
+        outline: none;
+        border-color: #60a5fa;
+        box-shadow: 0 0 0 3px rgba(96,165,250,.26);
+        background-color: #0f2036;
+      }
+      #vireon-admin .va-select {
+        cursor: pointer;
+        padding-right: 12px;
+        font-weight: 600;
+        -webkit-text-fill-color: #ffffff;
+      }
+      #vireon-admin .va-select option { color: #ffffff; background-color: #0c192b; }
+      #vireon-admin .va-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+      #vireon-admin .va-button {
+        min-height: 48px;
+        padding: 11px 16px !important;
+        border: 1px solid rgba(255,255,255,.2);
+        border-radius: 9px !important;
+        font-weight: 700;
+        font-size: 14px;
+        white-space: nowrap;
+        transition: filter .16s ease, box-shadow .16s ease;
+      }
+      #vireon-admin .va-button:hover:not(:disabled) { filter: brightness(1.15); }
+      #vireon-admin .va-button:focus-visible {
+        outline: 3px solid #93c5fd;
+        outline-offset: 3px;
+      }
+      #vireon-admin .va-button:disabled { opacity: .58; cursor: not-allowed; }
+      #vireon-admin .va-panel-metrics {
+        display: grid;
+        grid-template-columns: 1fr 1.7fr 1fr 1fr;
+        gap: 12px;
+      }
+      #vireon-admin .va-panel-metric {
+        background: #101d30;
+        border: 1px solid #465770;
+        border-radius: 9px;
+        padding: 13px 14px;
+        min-width: 0;
+      }
+      #vireon-admin .va-metric-label { color: #dbeafe; font-size: 13px; font-weight: 600; margin-bottom: 7px; }
+      #vireon-admin .va-metric-value { font-size: 18px; font-weight: 700; line-height: 1.3; color: #ffffff; overflow-wrap: anywhere; }
+      @media (max-width: 1120px) {
+        #vireon-admin .va-toolbar-filters { grid-template-columns: repeat(2,minmax(0,1fr)); }
+        #vireon-admin .va-filter-action { justify-content: flex-start; }
+      }
+      @media (max-width: 820px) {
+        #vireon-admin .va-toolbar-auth { grid-template-columns: minmax(0,1fr); }
+        #vireon-admin .va-panel-metrics { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      }
+      @media (max-width: 600px) {
+        #vireon-admin { padding: 18px 12px !important; }
+        #vireon-admin .va-toolbar-section { padding: 14px; }
+        #vireon-admin .va-toolbar-filters { grid-template-columns: minmax(0,1fr); }
+        #vireon-admin .va-actions { width: 100%; }
+        #vireon-admin .va-actions .va-button { flex: 1 1 auto; white-space: normal; }
+        #vireon-admin .va-panel-metrics { grid-template-columns: minmax(0,1fr); }
+      }
+    `}</style>
+    <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-.02em', margin: 0 }}>Vireon Analytics — /v2</h1>
     <p>Eventos do funil www.forcemichaelthompson.app/v2. O token permanece apenas na memória desta aba.</p>
-    <form onSubmit={searchEvents} style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 18, alignItems: 'center' }}>
-      <input aria-label="Token administrativo" type="password" autoComplete="off" value={token}
-        onChange={(e) => { setToken(e.target.value); setLoaded(false); setEvents([]); setDistribution([]); setSessionFunnel(null); setHealth(null); setTotal(0); }}
-        placeholder="Token de administrador" style={{ padding: 12, flex: 1, minWidth: 220, color: '#111', borderRadius: 6 }}/>
-      <button type="submit" disabled={!token.trim() || loading}
-        style={{ ...actionStyle, ...((!token.trim() || loading) ? mutedStyle : {}) }}>
-        {loading ? 'Carregando...' : 'Atualizar eventos'}
-      </button>
-      <button type="button" disabled={!loaded || exporting || loading || total === 0}
-        onClick={() => { void downloadCsv(); }}
-        style={{ ...actionStyle, background: '#15803d', ...((!loaded || exporting || loading || total === 0) ? mutedStyle : {}) }}>
-        {exporting ? 'Preparando CSV...' : 'Exportar CSV para Excel'}
-      </button>
-    </form>
-    <form onSubmit={searchEvents} style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginBottom: 16 }}>
-      <input aria-label="Filtrar eventos" value={filter} onChange={(e) => setFilter(e.target.value)}
-        placeholder="Filtrar sessão, evento, pedido, campanha..."
-        style={{ padding: 12, color: '#111', flex: 1, minWidth: 220, borderRadius: 6 }}/>
-      <button type="submit" disabled={!token.trim() || loading}
-        style={{ ...actionStyle, ...((!token.trim() || loading) ? mutedStyle : {}) }}>Aplicar filtro</button>
-      <label htmlFor="events-period">Período</label>
-      <select id="events-period" aria-label="Período dos eventos" value={period}
-        onChange={(e) => {
-          const selected = e.target.value;
-          setPeriod(selected);
-          if (loaded) void load(1, pageSize, appliedFilter, selected);
-        }} style={{ padding: 11, borderRadius: 6, color: '#111' }}>
-        <option value="24h">Últimas 24 horas</option>
-        <option value="7d">Últimos 7 dias</option>
-        <option value="30d">Últimos 30 dias</option>
-        <option value="all">Todo o histórico disponível</option>
-      </select>
-      <label htmlFor="events-size">Registros por página</label>
-      <select id="events-size" value={pageSize} aria-label="Registros por página"
-        onChange={(e) => {
-          const size = Number(e.target.value);
-          setPageSize(size);
-          if (loaded) void load(1, size, appliedFilter, appliedPeriod);
-        }} style={{ padding: 11, borderRadius: 6, color: '#111' }}>
-        {[100, 250, 500, 1000].map((size) => <option key={size} value={size}>{size}</option>)}
-      </select>
-    </form>
+    <div className="va-toolbar-section">
+      <form onSubmit={searchEvents} className="va-toolbar va-toolbar-auth">
+        <div className="va-control-group va-token">
+          <label className="va-label" htmlFor="admin-token">Token de administrador</label>
+          <input id="admin-token" aria-label="Token administrativo" type="password" autoComplete="off"
+            value={token}
+            onChange={(e) => { setToken(e.target.value); setLoaded(false); setEvents([]); setDistribution([]); setSessionFunnel(null); setHealth(null); setTotal(0); }}
+            placeholder="Digite seu token de administrador" className="va-field"/>
+        </div>
+        <div className="va-actions">
+          <button type="submit" className="va-button" disabled={!token.trim() || loading}
+            style={{ ...actionStyle, ...((!token.trim() || loading) ? mutedStyle : {}) }}>
+            {loading ? 'Carregando...' : 'Atualizar eventos'}
+          </button>
+          <button type="button" className="va-button" disabled={!loaded || exporting || loading || total === 0}
+            onClick={() => { void downloadCsv(); }}
+            style={{ ...actionStyle, background: '#15803d', ...((!loaded || exporting || loading || total === 0) ? mutedStyle : {}) }}>
+            {exporting ? 'Preparando CSV...' : 'Exportar CSV para Excel'}
+          </button>
+        </div>
+      </form>
+      <form onSubmit={searchEvents} className="va-toolbar va-toolbar-filters">
+        <div className="va-control-group va-search">
+          <label className="va-label" htmlFor="admin-search">Buscar eventos</label>
+          <input id="admin-search" aria-label="Filtrar eventos" value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            placeholder="Sessão, evento, pedido ou campanha..."
+            className="va-field"/>
+        </div>
+        <div className="va-control-group va-period">
+          <label className="va-label" htmlFor="events-period">Período</label>
+          <select id="events-period" aria-label="Período dos eventos" value={period}
+            className="va-field va-select"
+            onChange={(e) => {
+              const selected = e.target.value;
+              setPeriod(selected);
+              if (loaded) void load(1, pageSize, appliedFilter, selected);
+            }}>
+            <option value="24h">Últimas 24 horas</option>
+            <option value="7d">Últimos 7 dias</option>
+            <option value="30d">Últimos 30 dias</option>
+            <option value="all">Todo o histórico disponível</option>
+          </select>
+        </div>
+        <div className="va-control-group va-page-size">
+          <label className="va-label" htmlFor="events-size">Registros por página</label>
+          <select id="events-size" aria-label="Registros por página" value={pageSize}
+            className="va-field va-select"
+            onChange={(e) => {
+              const size = Number(e.target.value);
+              setPageSize(size);
+              if (loaded) void load(1, size, appliedFilter, appliedPeriod);
+            }}>
+            {[100, 250, 500, 1000].map((size) => <option key={size} value={size}>{size}</option>)}
+          </select>
+        </div>
+        <div className="va-actions va-filter-action">
+          <button type="submit" className="va-button" disabled={!token.trim() || loading}
+            style={{ ...actionStyle, ...((!token.trim() || loading) ? mutedStyle : {}) }}>
+            Aplicar filtro
+          </button>
+        </div>
+      </form>
+    </div>
     {error && <p role="alert" style={{ color: '#fca5a5' }}>{error}</p>}
     {loaded && health && <TrackingHealthPanel health={health} />}
     <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '14px 0' }}>
-      <button type="button" aria-expanded={showCharts} aria-controls="vireon-charts"
+      <button type="button" className="va-button" aria-expanded={showCharts} aria-controls="vireon-charts"
         onClick={() => setShowCharts((visible) => !visible)}
         style={{ ...actionStyle, background: '#334155', border: '1px solid #64748b' }}>
         {showCharts ? 'Ocultar gráficos' : 'Mostrar gráficos'}
