@@ -6,8 +6,11 @@
 type EventName = 'page_view' | 'quiz_start' | 'quiz_midpoint' | 'quiz_complete' | 'offer_view' | 'checkout_click' | 'upsell_view' | 'upsell_accept' | 'upsell_decline' | 'thank_you_view';
 type TrackerWindow = Window & { vireonTrack?: (event: EventName, detail?: string) => void; __vireonTrackerInstalled?: boolean };
 const sessionKey = 'vireon_v2_session';
-type TrackerDiagnostic = { installed: boolean; routeCalls: number; eventsAttempted: number; lastEvent: string; lastHttp: string; currentPath: string; dnt: string; gpc: boolean };
-const status: TrackerDiagnostic = { installed: false, routeCalls: 0, eventsAttempted: 0, lastEvent: 'none', lastHttp: 'none', currentPath: '', dnt: 'unknown', gpc: false };
+const visitorModeKey = 'vireon_v2_visitor_type';
+type VisitorType = 'real' | 'test';
+let activeVisitorType: VisitorType | null = null;
+type TrackerDiagnostic = { installed: boolean; routeCalls: number; eventsAttempted: number; lastEvent: string; lastHttp: string; currentPath: string; dnt: string; gpc: boolean; visitorType: string };
+const status: TrackerDiagnostic = { installed: false, routeCalls: 0, eventsAttempted: 0, lastEvent: 'none', lastHttp: 'none', currentPath: '', dnt: 'unknown', gpc: false, visitorType: 'uninitialized' };
 export function getFunnelDiagnostics() {
   if (typeof window !== 'undefined') {
     status.currentPath = window.location.pathname;
@@ -28,6 +31,31 @@ let sessionId = '';
 let utmSource = '';
 let utmCampaign = '';
 const sentMilestones = new Set<string>();
+
+// URL ?va_test=1 activates test mode for this tab; ?va_test=0 returns to normal mode.
+// Session storage keeps the mode when the funnel drops query parameters on navigation.
+// A mode transition creates a new session ID so real and test events never share a session.
+function getVisitorType(): VisitorType {
+  const param = new URLSearchParams(location.search).get('va_test');
+  const requested: VisitorType | null = param === '1' ? 'test' : param === '0' ? 'real' : null;
+  let stored: VisitorType | null = null;
+  try {
+    const raw = sessionStorage.getItem(visitorModeKey);
+    stored = raw === 'test' || raw === 'real' ? raw : null;
+  } catch { stored = activeVisitorType; }
+  const next: VisitorType = requested || stored || activeVisitorType || 'real';
+  if (next !== (stored || activeVisitorType)) {
+    sessionId = '';
+    sentMilestones.clear();
+    try {
+      sessionStorage.removeItem(sessionKey);
+      sessionStorage.setItem(visitorModeKey, next);
+    } catch { /* In-memory fallback */ }
+  }
+  activeVisitorType = next;
+  status.visitorType = next;
+  return next;
+}
 
 function getSession() {
   if (sessionId) return sessionId;
@@ -57,6 +85,7 @@ export function sendFunnelEvent(event: EventName, detail = '') {
   renderDiagnostics();
   if (!isFunnelPage(location.pathname)) { status.lastHttp = 'blocked:path'; renderDiagnostics(); return; }
   if (navigator.doNotTrack === '1' || navigator.globalPrivacyControl === true) { status.lastHttp = 'blocked:privacy-signal'; renderDiagnostics(); return; }
+  const visitorType = getVisitorType();
   const oncePerSession = new Set<EventName>(['page_view', 'quiz_start', 'quiz_midpoint', 'quiz_complete', 'offer_view', 'checkout_click', 'upsell_view', 'thank_you_view']);
   const dedupeKey = event === 'upsell_view' ? event + ':' + detail : event;
   const dedupeStorageKey = 'vireon_v2_sent:' + getSession() + ':' + dedupeKey;
@@ -72,6 +101,7 @@ export function sendFunnelEvent(event: EventName, detail = '') {
   utmCampaign ||= (params.get('utm_campaign') || '').slice(0, 80);
   const body = JSON.stringify({
     event,
+    visitor_type: visitorType,
     session_id: getSession(),
     path: location.pathname.slice(0, 160),
     step: detail.slice(0, 64),
