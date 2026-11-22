@@ -212,7 +212,7 @@ let f = {
 };
 export function Offer() {
     let { externo } = fv();
-    let [t, setT] = r.useState(false);
+    let [t, setT] = r.useState(true);
     let [b, setB] = r.useState(0);
     let [w, setW] = r.useState(null);
     let [v, setV] = r.useState({});
@@ -238,19 +238,14 @@ export function Offer() {
             let t = ()=>{
                 setT(true);
                 document.cookie = "vireon_pitch=1; path=/; max-age=2592000; SameSite=Lax";
-                window.setTimeout(()=>{
-                    SRef.current?.scrollIntoView({
-                        behavior: "smooth",
-                        block: "start"
-                    });
-                }, 150);
+
             };
             if (e) {
                 t();
                 return;
             }
-            let a = window.setTimeout(t, 1000 * W7.offer.delay);
-            return ()=>window.clearTimeout(a);
+            t();
+            return;
         } catch (e) {
             setT(true);
             setK(true);
