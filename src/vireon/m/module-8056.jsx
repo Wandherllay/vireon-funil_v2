@@ -235,7 +235,7 @@ export function Quiz() {
     });
     let [w, setW] = n.useState({});
     let [k, setK] = n.useState(null);
-    let [M, setM] = n.useState(false);
+    let [M, setM] = n.useState(true);
     let [L, setL] = n.useState(0);
     let [W, setW_1] = n.useState(0);
     let [A, setA] = n.useState(null);
