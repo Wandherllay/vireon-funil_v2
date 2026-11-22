@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { analyticsReady, appendEvent, json, readObject } from '../../../lib/vireon-analytics.server';
 
-const EVENTS = new Set(['page_view', 'quiz_start', 'offer_view', 'checkout_click', 'upsell_view', 'upsell_accept', 'upsell_decline', 'thank_you_view']);
+const EVENTS = new Set(['page_view', 'quiz_start', 'quiz_midpoint', 'quiz_complete', 'offer_view', 'checkout_click', 'upsell_view', 'upsell_accept', 'upsell_decline', 'thank_you_view']);
 const TRACKED_ORIGIN = 'https://www.forcemichaelthompson.app';
 const TRACKED_HOST = 'www.forcemichaelthompson.app';
 const safe = (value: unknown, max: number) => typeof value === 'string' ? value.slice(0, max) : '';
