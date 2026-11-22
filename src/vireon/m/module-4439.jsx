@@ -4,7 +4,7 @@ import { W7 } from "./module-2523.jsx";
 
 import * as r from "react";
 import { Button } from "@/components/ui/button";
-export function c({ variant }) {
+export function c({ variant, onTimeUpdate }) {
     const { src, poster } = W7[variant];
     const videoRef = r.useRef(null);
     const [silent, setSilent] = r.useState(true);
@@ -19,6 +19,7 @@ export function c({ variant }) {
     return <div className="w-full"><div className="vireon-local-player">
         <video ref={videoRef} src={src} poster={poster} autoPlay muted={silent} playsInline
             preload="metadata" aria-label={variant === "quiz" ? "Vireon introduction" : "Vireon protocol"}
+            onTimeUpdate={(event) => onTimeUpdate?.(event.currentTarget.currentTime)}
             onClick={() => {
                 const video = videoRef.current;
                 if (!video) return;
