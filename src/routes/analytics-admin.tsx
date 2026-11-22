@@ -127,6 +127,155 @@ type SessionFunnel = {
   lastStage: FunnelStep[];
 };
 
+// Visually inspired by a horizontal ads funnel, but uses only first-party /v2
+// session events. No Meta Ads clicks or purchase confirmations are inferred.
+const RIBBON_STAGES = [
+  { key: 'landing', label: 'Vis. Página' },
+  { key: 'quiz', label: 'Quiz início' },
+  { key: 'quiz_midpoint', label: 'Quiz 50%' },
+  { key: 'quiz_complete', label: 'Quiz fim' },
+  { key: 'offer', label: 'Oferta' },
+  { key: 'checkout', label: 'Checkout' },
+] as const;
+
+function ConversionRibbon({ funnel }: { funnel: SessionFunnel }) {
+  const base = funnel.landingSessions;
+  const steps = RIBBON_STAGES.map(({ key, label }) => {
+    const existing = funnel.observedStages.find((step) => step.key === key);
+    return { key, label, count: existing?.count || 0, percentage: existing?.percentage || 0 };
+  });
+  const num = (value: number) => value.toLocaleString('pt-BR');
+  const pct = (value: number) => value.toLocaleString('pt-BR', {
+    minimumFractionDigits: 0, maximumFractionDigits: 1,
+  }) + '%';
+
+  // A smooth ribbon uses each stage's share of landing sessions as its height.
+  // The 1.6px minimum makes an actual zero visible as a hairline, not a filled area.
+  const height = (count: number) => base > 0
+    ? Math.max(1.6, 76 * Math.sqrt(Math.max(0, Math.min(1, count / base))))
+    : 1.6;
+  const y = 139;
+  const midPoints = steps.map((step, index) => ({
+    x: index * 200 + 100, h: height(step.count),
+  }));
+  const anchors = [
+    { x: 0, h: midPoints[0].h },
+    ...midPoints,
+    { x: 1200, h: midPoints[midPoints.length - 1].h },
+  ];
+  let ribbon = 'M ' + anchors[0].x + ' ' + (y - anchors[0].h);
+  for (let i = 1; i < anchors.length; i++) {
+    const prev = anchors[i - 1], next = anchors[i];
+    const cx = (prev.x + next.x) / 2;
+    ribbon += ' C ' + cx + ' ' + (y - prev.h) + ' ' + cx + ' ' +
+      (y - next.h) + ' ' + next.x + ' ' + (y - next.h);
+  }
+  ribbon += ' L ' + anchors[anchors.length - 1].x + ' ' +
+    (y + anchors[anchors.length - 1].h);
+  for (let i = anchors.length - 2; i >= 0; i--) {
+    const prev = anchors[i + 1], next = anchors[i];
+    const cx = (prev.x + next.x) / 2;
+    ribbon += ' C ' + cx + ' ' + (y + prev.h) + ' ' + cx + ' ' +
+      (y + next.h) + ' ' + next.x + ' ' + (y + next.h);
+  }
+  ribbon += ' Z';
+
+  const losses = steps.slice(1).map((step, i) => {
+    const previous = steps[i];
+    const missing = Math.max(0, previous.count - step.count);
+    return {
+      from: previous.label, to: step.label, missing,
+      loss: previous.count ? missing / previous.count * 100 : null,
+    };
+  }).filter((entry) => entry.loss !== null);
+  const biggestLoss = [...losses].sort((a, b) => (b.loss || 0) - (a.loss || 0))[0];
+
+  return <section aria-label="Funil de conversão horizontal" style={{
+    background: '#263147', border: '1px solid #44516a',
+    borderRadius: 12, padding: '20px 18px 15px', margin: '18px 0 22px',
+  }}>
+    <div style={{ display: 'flex', gap: 12, alignItems: 'center',
+      justifyContent: 'space-between', flexWrap: 'wrap' }}>
+      <h2 style={{ fontSize: 19, fontWeight: 800, margin: 0, color: '#f8fafc' }}>
+        Funil de conversão — Vireon /v2
+      </h2>
+      <span title="Base: sessões únicas com entrada /v2. Dados do site; não são cliques do Meta Ads nem vendas confirmadas."
+        style={{ color: '#bfdbfe', fontSize: 12, border: '1px solid #60738e',
+          padding: '6px 9px', borderRadius: 7 }}>
+        Sessões únicas · eventos do site
+      </span>
+    </div>
+    <p style={{ color: '#cbd5e1', fontSize: 13, margin: '9px 0 14px' }}>
+      Cada percentual é relativo às sessões que entraram no /v2. O desenho diminui
+      conforme os registros de avanço no funil.
+    </p>
+    {base === 0 ? <div style={{
+      border: '1px dashed #64748b', borderRadius: 9, padding: 22,
+      color: '#cbd5e1', textAlign: 'center',
+    }}>
+      Nenhuma sessão de entrada /v2 encontrada no período e filtros escolhidos.
+      Confira os eventos recebidos antes de interpretar as taxas de conversão.
+    </div> : <>
+      <div style={{ overflowX: 'auto', maxWidth: '100%', paddingBottom: 5 }}>
+        <div style={{ minWidth: 960, width: '100%', height: 260, position: 'relative' }}>
+          <svg viewBox="0 0 1200 260" preserveAspectRatio="none"
+            aria-hidden="true" style={{ position: 'absolute', inset: 0,
+              width: '100%', height: '100%', display: 'block' }}>
+            <defs>
+              <linearGradient id="vireon-conversion-ribbon" x1="0" x2="1" y1="0" y2="0">
+                <stop offset="0%" stopColor="#075fe3"/>
+                <stop offset="58%" stopColor="#1668e8"/>
+                <stop offset="100%" stopColor="#2690f2"/>
+              </linearGradient>
+            </defs>
+            <path d={ribbon} fill="url(#vireon-conversion-ribbon)"/>
+          </svg>
+          <div style={{ position: 'absolute', inset: 0, display: 'grid',
+            gridTemplateColumns: 'repeat(6, minmax(0, 1fr))' }}>
+            {steps.map((stage, index) => <div key={stage.key} style={{
+              position: 'relative', textAlign: 'center', minWidth: 0,
+            }}>
+              {index > 0 && <span aria-hidden="true" style={{
+                position: 'absolute', left: 0, top: 53, bottom: 37,
+                width: 1, background: '#8997ac', opacity: .9,
+              }}/>}
+              <div style={{ position: 'absolute', top: 17, left: 4, right: 4,
+                fontSize: 14, fontWeight: 700, color: '#e2e8f0' }}>
+                {stage.label}
+              </div>
+              <strong style={{
+                position: 'absolute', top: 139, left: 0, right: 0,
+                transform: 'translateY(-50%)', fontSize: 22, fontWeight: 800,
+                color: '#ffffff', textShadow: '0 2px 5px rgba(0,0,0,.8)',
+                fontVariantNumeric: 'tabular-nums', pointerEvents: 'none',
+              }}>
+                {pct(stage.percentage)}
+              </strong>
+              <div style={{ position: 'absolute', bottom: 5, left: 0, right: 0,
+                fontSize: 17, color: '#e2e8f0', fontWeight: 800,
+                fontVariantNumeric: 'tabular-nums' }}>
+                {num(stage.count)}
+                <div style={{ fontSize: 10, fontWeight: 500, color: '#bdc9da' }}>sessões</div>
+              </div>
+            </div>)}
+          </div>
+        </div>
+      </div>
+      {biggestLoss && <p style={{ fontSize: 13, margin: '12px 0 0',
+        color: '#fcd34d', fontWeight: 600 }}>
+        Maior queda observada: {biggestLoss.from} → {biggestLoss.to} ·
+        {' '}{num(biggestLoss.missing)} sessão(ões) sem registro da etapa seguinte
+        ({pct(biggestLoss.loss || 0)} da etapa anterior).
+      </p>}
+    </>}
+    <p style={{ color: '#aebfd3', fontSize: 12, lineHeight: 1.55, margin: '13px 0 0' }}>
+      Visitas e etapas são registros de navegação, não métricas importadas do Meta Ads.
+      “Checkout” significa clique rastreado para o checkout externo, não chegada confirmada ou venda.
+      Ausência de evento posterior pode representar abandono ou falha de rastreamento.
+    </p>
+  </section>;
+}
+
 function SessionFunnelPanel({ funnel }: { funnel: SessionFunnel }) {
   const steps = Array.isArray(funnel.observedStages) ? funnel.observedStages : [];
   const last = Array.isArray(funnel.lastStage) ? funnel.lastStage : [];
@@ -493,6 +642,7 @@ function AnalyticsAdmin() {
       </button>
     </div>
     <div id="vireon-charts" hidden={!showCharts}>
+      {loaded && sessionFunnel && <ConversionRibbon funnel={sessionFunnel} />}
       {loaded && sessionFunnel && <SessionFunnelPanel funnel={sessionFunnel} />}
       {loaded && <EventDistributionChart items={distribution} total={total} />}
     </div>
