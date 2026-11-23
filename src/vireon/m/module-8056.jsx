@@ -144,10 +144,10 @@ let i = [
     }
 ];
 let r = [
-    "18–39 years",
-    "40–50 years",
-    "51–60 years",
-    "61+ years"
+    "25–34 years",
+    "35–44 years",
+    "45–54 years",
+    "55+ years"
 ];
 let m = (e)=>i.findIndex((t)=>t.id === e);
 let u = [
@@ -557,7 +557,7 @@ export function Quiz() {
                 {EiComponent(<div className="w-full">
                     <h2 className="mb-1 text-center text-[24px] font-bold leading-tight text-[#1a1a1a]">What is your age range?</h2>
                     <p className="mb-5 text-center text-[13px] leading-relaxed text-[#888]">
-                        Just one tap to continue. No exact age or weight needed.
+                        Just one tap to continue. No exact age needed.
                     </p>
                     <div className="flex flex-col gap-3" role="radiogroup" aria-label="Age range">
                         {r.map((range) => {
