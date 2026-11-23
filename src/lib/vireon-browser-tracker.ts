@@ -28,6 +28,53 @@ let sessionId = '';
 let utmSource = '';
 let utmCampaign = '';
 const sentMilestones = new Set<string>();
+const sentQuestionMetrics = new Set<string>();
+export type QuizQuestionId =
+  | 'symptom' | 'duration' | 'age_band' | 'baking_soda' | 'lemon' | 'spice'
+  | 'allergy' | 'tried' | 'goal' | 'sleep' | 'water' | 'routine';
+
+function getQuestionTrafficGroup(): 'fb' | 'other' {
+  const key = 'vireon_v2_traffic_group';
+  try {
+    const saved = sessionStorage.getItem(key);
+    if (saved === 'fb' || saved === 'other') return saved;
+    const source = (new URLSearchParams(window.location.search).get('utm_source') || '').toLowerCase();
+    const group = ['fb', 'facebook', 'meta'].includes(source) ? 'fb' : 'other';
+    sessionStorage.setItem(key, group);
+    return group;
+  } catch {
+    return ['fb', 'facebook', 'meta'].includes(
+      (new URLSearchParams(window.location.search).get('utm_source') || '').toLowerCase(),
+    ) ? 'fb' : 'other';
+  }
+}
+
+/** One view and one advance per question per browser session; no answers or IDs leave the browser. */
+export function trackQuestionMetric(questionId: QuizQuestionId, action: 'view' | 'advance') {
+  if (typeof window === 'undefined' || !isFunnelPage(location.pathname)) return;
+  if (navigator.doNotTrack === '1' || navigator.globalPrivacyControl === true) return;
+  const key = 'vireon_v2_qagg:' + getSession() + ':' + questionId + ':' + action;
+  if (sentQuestionMetrics.has(key)) return;
+  try { if (sessionStorage.getItem(key) === '1') return; } catch {}
+  sentQuestionMetrics.add(key);
+  try { sessionStorage.setItem(key, '1'); } catch {}
+  const body = JSON.stringify({
+    event: action === 'view' ? 'question_view' : 'question_advance',
+    question_id: questionId, traffic: getQuestionTrafficGroup(),
+  });
+  void fetch(COLLECTOR_URL, {
+    method: 'POST', mode: 'cors',
+    headers: { 'Content-Type': 'application/json' },
+    body, keepalive: true, credentials: 'omit',
+  }).then((response) => {
+    if (!response.ok) throw new Error('Question metric HTTP ' + response.status);
+  }).catch(() => {
+    sentQuestionMetrics.delete(key);
+    try { sessionStorage.removeItem(key); } catch {}
+    console.warn('[Vireon Analytics] Question count could not be delivered');
+  });
+}
+
 
 function getSession() {
   if (sessionId) return sessionId;

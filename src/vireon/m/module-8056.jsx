@@ -5,6 +5,7 @@ import * as o from "./module-4439.jsx";
 import { A8, TD } from "./module-7439.jsx";
 import { W7, bw } from "./module-2523.jsx";
 import { fv } from "./module-6885.jsx";
+import { trackQuestionMetric } from "../../lib/vireon-browser-tracker";
 
 import * as n from "react";
 let i = [
@@ -249,6 +250,14 @@ export function Quiz() {
             window.vireonTrack?.("quiz_complete", "12_of_12");
         }
     }, [b.kind]);
+    // Record the question being shown, without capturing which option is selected.
+    n.useEffect(()=>{
+        if (b.kind === "age") {
+            trackQuestionMetric("age_band", "view");
+        } else if (b.kind === "question" && i[b.index]) {
+            trackQuestionMetric(i[b.index].id, "view");
+        }
+    }, [b.kind, b.index]);
     let V = b.kind === "question" ? b.index : -1;
     let Q = V >= 0 ? i[V] : null;
     let J = Q && (e = w[Q.id]) !== null && e !== undefined ? e : [];
@@ -563,6 +572,7 @@ export function Quiz() {
                             return <button key={range} type="button"
                                 aria-pressed={selected}
                                 onClick={() => {
+                                    trackQuestionMetric("age_band", "advance");
                                     setK(range);
                                     setW((answers) => ({ ...answers, age_band: [range] }));
                                     g(4, range);
@@ -796,6 +806,7 @@ export function Quiz() {
                         ]
                     }));
                 g(Z, e);
+                trackQuestionMetric(Q.id, "advance");
                 if (Q.id === "symptom") {
                     window.vireonTrack?.("quiz_start", "first_answer");
                 }
@@ -813,7 +824,7 @@ export function Quiz() {
             })(e)} aria-pressed={n} className={`flex items-center gap-3 rounded-xl border p-4 text-left transition-all duration-200 ${n ? "border-2 border-[#2a9d6f] bg-[#f0faf5]" : "border-[#e8e8e8] hover:border-[#2a9d6f] hover:bg-[#f8fbf9]"}`} style={{
             padding: "16px 20px"
         }}><span className={`grid h-5 w-5 shrink-0 place-items-center ${Q.multiple ? "rounded-sm" : "rounded-full"} border-2 ${n ? "border-[#2a9d6f] bg-[#2a9d6f]" : "border-[#ccc]"}`}>{n && <span className="text-xs text-white">✓</span>}</span><span className="flex-1 text-[15px] font-medium text-[#1a1a1a]">{Q.emojis?.[t] ? `${Q.emojis[t]} ` : ""}{e}</span>{Q.id === "duration" && <span className="shrink-0 text-lg text-[#ccc]">›</span>}</button>;
-    })}</div>{Q?.multiple && <button type="button" onClick={es} disabled={J.length === 0} className={`mt-5 w-full rounded-xl py-3.5 text-[16px] font-semibold text-white transition-colors duration-200 ${J.length === 0 ? "cursor-not-allowed bg-[#e8e8e8]" : "bg-[#2a9d6f] hover:bg-[#238c5c]"}`}>Continue</button>}</div>)}</div>{A && <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 backdrop-blur-sm"><div className="mx-6 w-full max-w-[340px] rounded-2xl bg-white p-6 shadow-xl"><div className="flex flex-col items-center"><span className="mb-3 text-4xl">{A.icon}</span><p className="mb-4 text-center text-[14px] font-medium text-[#1a1a1a]">{A.message}</p><div className="h-1.5 w-full overflow-hidden rounded-full bg-[#e8e8e8]"><div className="h-full rounded-full bg-[#2a9d6f] transition-all duration-100 ease-linear" style={{
+    })}</div>{Q?.multiple && <button type="button" onClick={()=>{ trackQuestionMetric(Q.id, "advance"); es(); }} disabled={J.length === 0} className={`mt-5 w-full rounded-xl py-3.5 text-[16px] font-semibold text-white transition-colors duration-200 ${J.length === 0 ? "cursor-not-allowed bg-[#e8e8e8]" : "bg-[#2a9d6f] hover:bg-[#238c5c]"}`}>Continue</button>}</div>)}</div>{A && <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 backdrop-blur-sm"><div className="mx-6 w-full max-w-[340px] rounded-2xl bg-white p-6 shadow-xl"><div className="flex flex-col items-center"><span className="mb-3 text-4xl">{A.icon}</span><p className="mb-4 text-center text-[14px] font-medium text-[#1a1a1a]">{A.message}</p><div className="h-1.5 w-full overflow-hidden rounded-full bg-[#e8e8e8]"><div className="h-full rounded-full bg-[#2a9d6f] transition-all duration-100 ease-linear" style={{
         width: `${L}%`
     }}/></div></div></div></div>}</div>;
 }
