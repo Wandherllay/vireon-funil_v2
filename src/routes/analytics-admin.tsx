@@ -62,8 +62,9 @@ type QuestionMetricRow = { id: string; views: number; advances: number };
 type QuestionMetrics = {
   bySource: { fb: QuestionMetricRow[]; other: QuestionMetricRow[]; all: QuestionMetricRow[] };
   totalCounters: number; granularity: string; daysIncluded: number; retentionDays: number;
+  quizVersion: '10' | '12';
 };
-const QUESTION_TITLES = [
+const QUESTION_TITLES_10 = [
   ['symptom', '1. O que deseja melhorar?'],
   ['duration', '2. Quando percebeu a mudança?'],
   ['age_band', '3. Faixa etária'],
@@ -75,12 +76,27 @@ const QUESTION_TITLES = [
   ['water', '9. Consumo de água'],
   ['routine', '10. Rotina diária'],
 ] as const;
+const QUESTION_TITLES_12 = [
+  ['symptom', '1. O que deseja melhorar?'],
+  ['duration', '2. Quando percebeu a mudança?'],
+  ['age_band', '3. Faixa etária'],
+  ['baking_soda', '4. Tem bicarbonato em casa?'],
+  ['lemon', '5. Tem limão em casa?'],
+  ['spice', '6. Tem gengibre, canela ou pimenta?'],
+  ['allergy', '7. Alergia a temperos?'],
+  ['tried', '8. O que já tentou?'],
+  ['goal', '9. Objetivo principal'],
+  ['sleep', '10. Horas de sono'],
+  ['water', '11. Consumo de água'],
+  ['routine', '12. Rotina diária'],
+] as const;
 
 function QuestionDropoffPanel({ metrics }: { metrics: QuestionMetrics | null }) {
   const [source, setSource] = useState<'fb' | 'all' | 'other'>('fb');
   const rows = metrics?.bySource?.[source] || [];
   const byId = new Map(rows.map((r) => [r.id, r]));
-  const ordered = QUESTION_TITLES.map(([id, label]) => {
+  const questionTitles = metrics?.quizVersion === '12' ? QUESTION_TITLES_12 : QUESTION_TITLES_10;
+  const ordered = questionTitles.map(([id, label]) => {
     const item = byId.get(id);
     const views = item?.views || 0;
     const advances = item?.advances || 0;
@@ -123,7 +139,7 @@ function QuestionDropoffPanel({ metrics }: { metrics: QuestionMetrics | null }) 
         Amostra inicial: aguardando ao menos 10 visualizações por pergunta para apontar um gargalo.
       </p>}
     <details style={{ marginTop: 14 }}>
-      <summary style={{ cursor: 'pointer', fontWeight: 700, color: '#7dd3fc' }}>Ver as 12 perguntas e seus contadores</summary>
+      <summary style={{ cursor: 'pointer', fontWeight: 700, color: '#7dd3fc' }}>Ver as {metrics?.quizVersion === '12' ? 12 : 10} perguntas e seus contadores</summary>
       <div style={{ overflowX: 'auto', marginTop: 12 }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
           <thead><tr>{['Pergunta', 'Visualizações', 'Avanços', 'Sem avanço', 'Não avanço (%)'].map((title) =>
@@ -143,7 +159,10 @@ function QuestionDropoffPanel({ metrics }: { metrics: QuestionMetrics | null }) 
       identificação de sessão ou detalhes de campanha neste relatório. A origem FB depende da UTM.
       O período usa dias-calendário UTC ({metrics?.daysIncluded || 0} dias incluídos);
       a opção 24h abrange hoje e ontem UTC. O histórico agregado é independente dos 5.000 eventos
-      e da pesquisa por eventos. “Sem avanço” não comprova abandono definitivo, pois há sessões em andamento.
+      e da pesquisa por eventos. {metrics?.quizVersion === '10'
+        ? 'Versão atual de 10 perguntas: os dados antigos de 12 não entram neste ranking.'
+        : 'Histórico anterior de 12 perguntas; não misturado ao modelo atual.'}
+      “Sem avanço” não comprova abandono definitivo, pois há sessões em andamento.
     </p>
   </section>;
 }
@@ -525,6 +544,8 @@ function AnalyticsAdmin() {
   const [appliedFilter, setAppliedFilter] = useState('');
   const [period, setPeriod] = useState('7d');
   const [appliedPeriod, setAppliedPeriod] = useState('7d');
+  const [quizVersion, setQuizVersion] = useState<'10' | '12'>('10');
+  const [appliedQuizVersion, setAppliedQuizVersion] = useState<'10' | '12'>('10');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(500);
   const [total, setTotal] = useState(0);
@@ -532,13 +553,13 @@ function AnalyticsAdmin() {
   const actionStyle = { padding: '11px 14px', background: '#2563eb', borderRadius: 6, color: 'white', cursor: 'pointer' };
   const mutedStyle = { opacity: 0.5, cursor: 'not-allowed' };
 
-  async function load(nextPage = 1, size = pageSize, search = filter, selectedPeriod = period) {
+  async function load(nextPage = 1, size = pageSize, search = filter, selectedPeriod = period, selectedVersion = quizVersion) {
     if (!token.trim()) return;
     setLoading(true);
     setError('');
     try {
       const normalized = search.trim().slice(0, 120);
-      const params = new URLSearchParams({ page: String(nextPage), pageSize: String(size), period: selectedPeriod });
+      const params = new URLSearchParams({ page: String(nextPage), pageSize: String(size), period: selectedPeriod, version: selectedVersion });
       if (normalized) params.set('q', normalized);
       const response = await fetch('/v2/api/analytics/events?' + params.toString(), {
         headers: { Authorization: 'Bearer ' + token }, cache: 'no-store',
@@ -557,6 +578,7 @@ function AnalyticsAdmin() {
       setTotalPages(Number(data.totalPages) || 1);
       setAppliedFilter(normalized);
       setAppliedPeriod(selectedPeriod);
+      setAppliedQuizVersion(selectedVersion);
       setLoaded(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Falha de conexão.');
@@ -570,7 +592,7 @@ function AnalyticsAdmin() {
     setExporting(true);
     setError('');
     try {
-      const params = new URLSearchParams({ format: 'csv', period: appliedPeriod });
+      const params = new URLSearchParams({ format: 'csv', period: appliedPeriod, version: appliedQuizVersion });
       if (appliedFilter) params.set('q', appliedFilter);
       const response = await fetch('/v2/api/analytics/events?' + params.toString(), {
         headers: { Authorization: 'Bearer ' + token }, cache: 'no-store',
@@ -580,7 +602,7 @@ function AnalyticsAdmin() {
       const fileUrl = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = fileUrl;
-      link.download = 'vireon-v2-eventos-' + new Date().toISOString().slice(0, 10) + '.csv';
+      link.download = 'vireon-v2-' + appliedQuizVersion + '-perguntas-' + new Date().toISOString().slice(0, 10) + '.csv';
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -755,6 +777,19 @@ function AnalyticsAdmin() {
             className="va-field"/>
         </div>
         <div className="va-control-group va-period">
+          <label className="va-label" htmlFor="events-version">Versão do quiz</label>
+          <select id="events-version" aria-label="Versão do quiz" value={quizVersion}
+            className="va-field va-select"
+            onChange={(e) => {
+              const selected = e.target.value as '10' | '12';
+              setQuizVersion(selected);
+              if (loaded) void load(1, pageSize, appliedFilter, appliedPeriod, selected);
+            }}>
+            <option value="10">Atual — 10 perguntas</option>
+            <option value="12">Histórico — 12 perguntas</option>
+          </select>
+        </div>
+        <div className="va-control-group va-period">
           <label className="va-label" htmlFor="events-period">Período</label>
           <select id="events-period" aria-label="Período dos eventos" value={period}
             className="va-field va-select"
@@ -790,6 +825,11 @@ function AnalyticsAdmin() {
       </form>
     </div>
     {error && <p role="alert" style={{ color: '#fca5a5' }}>{error}</p>}
+    {loaded && <p style={{ fontSize: 13, color: '#cbd5e1', margin: '14px 0' }}>
+      Visualizando o quiz de {appliedQuizVersion} perguntas. Dados de sessões e perguntas separados
+      por versão; os registros de pagamento PerfectPay e os contadores de VSL não têm
+      segmentação por versão e podem abranger ambas.
+    </p>}
     {loaded && health && <TrackingHealthPanel health={health} />}
     {loaded && <QuestionDropoffPanel metrics={questionMetrics} />}
     {loaded && <VideoHealthPanel metrics={videoMetrics} />}
