@@ -64,7 +64,7 @@ export function trackVideoMetric(video: VideoVariant, action: VideoMetricAction)
 }
 
 export type QuizQuestionId =
-  | 'symptom' | 'duration' | 'age_band' | 'baking_soda' | 'lemon' | 'spice'
+  | 'symptom' | 'duration' | 'age_band' | 'ingredients' | 'baking_soda' | 'lemon' | 'spice'
   | 'allergy' | 'tried' | 'goal' | 'sleep' | 'water' | 'routine';
 
 function getQuestionTrafficGroup(): 'fb' | 'other' {
