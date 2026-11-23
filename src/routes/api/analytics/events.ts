@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { timingSafeEqual } from 'node:crypto';
-import { analyticsReady, json, recentEvents } from '../../../lib/vireon-analytics.server';
+import { analyticsReady, getQuestionMetrics, json, recentEvents } from '../../../lib/vireon-analytics.server';
 
 function authorized(request: Request) {
   const expected = process.env.VIREON_ANALYTICS_ADMIN_TOKEN;
@@ -216,9 +216,13 @@ export const Route = createFileRoute('/api/analytics/events')({
         const page = Number.isFinite(requestedPage) ?
           Math.min(Math.max(Math.floor(requestedPage), 1), totalPages) : 1;
         const start = (page - 1) * pageSize;
+        // Aggregates are independent of the event search and never contain answers.
+        // If this optional layer is unavailable, keep the detailed dashboard usable.
+        const questionMetrics = await getQuestionMetrics(period).catch(() => null);
         return json({
           events: filtered.slice(start, start + pageSize),
           total, page, pageSize, totalPages, maxStored: 5000, distribution, funnel, health, period,
+          questionMetrics,
         });
       } catch { return json({ error: 'storage_unavailable' }, 503); }
     },
