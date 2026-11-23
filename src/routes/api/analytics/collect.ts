@@ -55,13 +55,15 @@ export const Route = createFileRoute('/api/analytics/collect')({
       if (body && (body.event === 'question_view' || body.event === 'question_advance')) {
         const question = body.question_id;
         const traffic = body.traffic;
+        const version = body.quiz_version === '10' ? '10' : body.quiz_version === undefined ? '12' : null;
         if (typeof question !== 'string' || !QUESTION_IDS.includes(question as any) ||
-            (traffic !== 'fb' && traffic !== 'other') ||
-            Object.keys(body).some((key) => !['event', 'question_id', 'traffic'].includes(key))) {
+            (traffic !== 'fb' && traffic !== 'other') || !version ||
+            (version === '12' && question === 'ingredients') ||
+            Object.keys(body).some((key) => !['event', 'question_id', 'traffic', 'quiz_version'].includes(key))) {
           return collectorResponse({ error: 'invalid' }, 400, origin);
         }
         try {
-          await incrementQuestionMetric(question as any, body.event === 'question_view' ? 'view' : 'advance', traffic);
+          await incrementQuestionMetric(question as any, body.event === 'question_view' ? 'view' : 'advance', traffic, version);
           return collectorResponse({ ok: true }, 200, origin);
         } catch { return collectorResponse({ error: 'storage_unavailable' }, 503, origin); }
       }
@@ -78,6 +80,7 @@ export const Route = createFileRoute('/api/analytics/collect')({
           session_id: body.session_id, event: body.event,
           path: safe(body.path, 160), step: safe(body.step, 64),
           utm_source: safe(body.utm_source, 80), utm_campaign: safe(body.utm_campaign, 80),
+          quiz_version: body.quiz_version === '10' ? '10' : '12',
           received_at: new Date().toISOString(),
         });
         return collectorResponse({ ok: true }, 200, origin);
