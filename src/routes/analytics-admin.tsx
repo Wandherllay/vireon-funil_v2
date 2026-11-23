@@ -67,15 +67,13 @@ const QUESTION_TITLES = [
   ['symptom', '1. O que deseja melhorar?'],
   ['duration', '2. Quando percebeu a mudança?'],
   ['age_band', '3. Faixa etária'],
-  ['baking_soda', '4. Tem bicarbonato em casa?'],
-  ['lemon', '5. Tem limão em casa?'],
-  ['spice', '6. Tem gengibre, canela ou pimenta?'],
-  ['allergy', '7. Alergia a temperos?'],
-  ['tried', '8. O que já tentou?'],
-  ['goal', '9. Objetivo principal'],
-  ['sleep', '10. Horas de sono'],
-  ['water', '11. Consumo de água'],
-  ['routine', '12. Rotina diária'],
+  ['ingredients', '4. Disponibilidade dos ingredientes'],
+  ['allergy', '5. Alergia a temperos?'],
+  ['tried', '6. O que já tentou?'],
+  ['goal', '7. Objetivo principal'],
+  ['sleep', '8. Horas de sono'],
+  ['water', '9. Consumo de água'],
+  ['routine', '10. Rotina diária'],
 ] as const;
 
 function QuestionDropoffPanel({ metrics }: { metrics: QuestionMetrics | null }) {
@@ -215,8 +213,8 @@ function VideoHealthPanel({ metrics }: { metrics: VideoMetrics | null }) {
 const EVENT_LABELS: Record<string, string> = {
   page_view: 'Visitas ao funil',
   quiz_start: 'Inícios do quiz',
-  quiz_midpoint: 'Metade do quiz (6/12)',
-  quiz_complete: 'Quiz concluído (12/12)',
+  quiz_midpoint: 'Metade do quiz (QA: 5/10)',
+  quiz_complete: 'Quiz concluído (QA: 10/10)',
   offer_view: 'Visualizações da oferta',
   checkout_click: 'Cliques no checkout',
   upsell_view: 'Visualizações de upsell',
