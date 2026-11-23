@@ -48,36 +48,51 @@ export const QUESTION_IDS = [
   'allergy', 'tried', 'goal', 'sleep', 'water', 'routine',
 ] as const;
 export type QuestionId = typeof QUESTION_IDS[number];
+export type QuizVersion = '10' | '12';
+const QUESTION_IDS_V10: readonly QuestionId[] = [
+  'symptom', 'duration', 'age_band', 'ingredients', 'allergy',
+  'tried', 'goal', 'sleep', 'water', 'routine',
+];
+const QUESTION_IDS_V12: readonly QuestionId[] = [
+  'symptom', 'duration', 'age_band', 'baking_soda', 'lemon', 'spice',
+  'allergy', 'tried', 'goal', 'sleep', 'water', 'routine',
+];
 export type QuestionMetricAction = 'view' | 'advance';
 export type QuestionTrafficGroup = 'fb' | 'other';
 
 export async function incrementQuestionMetric(
   question: QuestionId, action: QuestionMetricAction, traffic: QuestionTrafficGroup,
+  quizVersion: QuizVersion = '12',
 ) {
   const day = new Date().toISOString().slice(0, 10); // UTC calendar day
-  const key = 'vireon:v2:question-aggregate:' + day;
+  // New questions stay isolated from the previous 12-question counters.
+  const key = quizVersion === '10'
+    ? 'vireon:v2:question-aggregate:v10:' + day
+    : 'vireon:v2:question-aggregate:' + day;
   await command('HINCRBY', key, traffic + ':' + question + ':' + action, 1);
   await command('EXPIRE', key, 35 * 24 * 60 * 60);
 }
 
 type QuestionCounts = { id: QuestionId; views: number; advances: number };
-function questionCounts(): QuestionCounts[] {
-  return QUESTION_IDS.map((id) => ({ id, views: 0, advances: 0 }));
+function questionCounts(ids: readonly QuestionId[]): QuestionCounts[] {
+  return ids.map((id) => ({ id, views: 0, advances: 0 }));
 }
-export async function getQuestionMetrics(period: '24h' | '7d' | '30d' | 'all') {
+export async function getQuestionMetrics(period: '24h' | '7d' | '30d' | 'all', quizVersion: QuizVersion = '10') {
   // UTC day buckets: 24h includes today and yesterday; 7d/30d are UTC calendar days.
   // 'all' means retained aggregate history (up to 31 UTC calendar days).
   const days = period === '24h' ? 2 : period === '7d' ? 7 : 31;
+  const questionIds = quizVersion === '10' ? QUESTION_IDS_V10 : QUESTION_IDS_V12;
   const date = new Date();
   date.setUTCHours(0, 0, 0, 0);
   const keys = Array.from({ length: days }, (_, offset) => {
     const d = new Date(date.getTime() - offset * 86400000);
-    return 'vireon:v2:question-aggregate:' + d.toISOString().slice(0, 10);
+    return (quizVersion === '10' ? 'vireon:v2:question-aggregate:v10:' : 'vireon:v2:question-aggregate:') +
+      d.toISOString().slice(0, 10);
   });
   const bucketRows = await Promise.all(keys.map((key) => command('HGETALL', key)));
-  const fb = questionCounts();
-  const other = questionCounts();
-  const byQuestion = new Map(QUESTION_IDS.map((id, i) => [id, i]));
+  const fb = questionCounts(questionIds);
+  const other = questionCounts(questionIds);
+  const byQuestion = new Map(questionIds.map((id, i) => [id, i]));
   let totalCounters = 0;
   for (const raw of bucketRows) {
     // Upstash REST HGETALL normally returns alternating field/value pairs.
@@ -100,12 +115,13 @@ export async function getQuestionMetrics(period: '24h' | '7d' | '30d' | 'all') {
   return {
     bySource: {
       fb, other,
-      all: QUESTION_IDS.map((id, i) => ({
+      all: questionIds.map((id, i) => ({
         id, views: fb[i].views + other[i].views,
         advances: fb[i].advances + other[i].advances,
       })),
     },
     totalCounters,
+    quizVersion,
     granularity: 'UTC_calendar_day',
     daysIncluded: days,
     retentionDays: 35,
