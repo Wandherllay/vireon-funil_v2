@@ -909,7 +909,7 @@ function AnalyticsAdmin() {
     </nav>
     <div style={{ overflowX: 'auto' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
-        <thead><tr>{['Horário', 'Origem', 'Evento', 'Sessão / Pedido', 'Página / Produto', 'Etapa', 'Campanha'].map((name) =>
+        <thead><tr>{['Horário', 'Origem', 'Evento', 'Sessão / Pedido', 'Página / Produto', 'Etapa'].map((name) =>
           <th key={name} style={{ padding: 10, borderBottom: '1px solid #64748b', whiteSpace: 'nowrap' }}>{name}</th>
         )}</tr></thead>
         <tbody>{events.map((r, i) => <tr key={i}>
@@ -921,7 +921,7 @@ function AnalyticsAdmin() {
           <td style={{ padding: 10 }}>{r.session_id?.slice(0, 8) || r.order_code || '—'}</td>
           <td style={{ padding: 10 }}>{r.path || r.product_name || '—'}</td>
           <td style={{ padding: 10 }}>{r.step || '—'}</td>
-          <td style={{ padding: 10 }}>{r.utm_campaign || '—'}</td>
+          
         </tr>)}</tbody>
       </table>
       {loaded && !events.length && <p>Nenhum evento encontrado para o filtro atual.</p>}
