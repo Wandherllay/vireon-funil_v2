@@ -242,13 +242,11 @@ export function Quiz() {
     let [A, setA] = n.useState(null);
     let [Y, setY] = n.useState(false);
     let [R, setR] = n.useState(false);
-    // Only two additional milestones: after question 6/11 and after question 11/11.
+    // Track after answering question 6 of 12, and after completing question 12 of 12.
     // Never transmit answers. The central tracker deduplicates per browser session.
     n.useEffect(()=>{
-        if (b.kind === "confirmed") {
-            window.vireonTrack?.("quiz_midpoint", "6_of_11");
-        } else if (b.kind === "calibrated") {
-            window.vireonTrack?.("quiz_complete", "11_of_11");
+        if (b.kind === "calibrated") {
+            window.vireonTrack?.("quiz_complete", "12_of_12");
         }
     }, [b.kind]);
     let V = b.kind === "question" ? b.index : -1;
@@ -800,6 +798,9 @@ export function Quiz() {
                 g(Z, e);
                 if (Q.id === "symptom") {
                     window.vireonTrack?.("quiz_start", "first_answer");
+                }
+                if (Q.id === "spice") {
+                    window.vireonTrack?.("quiz_midpoint", "6_of_12");
                 }
                 if (Q.id === "water") {
                     setA({
