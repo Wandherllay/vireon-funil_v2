@@ -587,6 +587,16 @@ function AnalyticsAdmin() {
     }
   }
 
+  // Re-fetch the current cohort, page, period and search without returning to the toolbar.
+  function refreshVisibleData() {
+    if (!token.trim() || loading) return;
+    if (!loaded) {
+      void load(1, pageSize, filter, period, quizVersion);
+      return;
+    }
+    void load(page, pageSize, appliedFilter, appliedPeriod, appliedQuizVersion);
+  }
+
   async function downloadCsv() {
     if (!loaded || exporting || !token.trim()) return;
     setExporting(true);
@@ -624,7 +634,7 @@ function AnalyticsAdmin() {
   const disableBack = !loaded || loading || page <= 1;
   const disableNext = !loaded || loading || page >= totalPages;
 
-  return <main id="vireon-admin" style={{ width: '100%', maxWidth: 'none', margin: 0, padding: '28px clamp(16px, 2.5vw, 44px)', minHeight: '100vh', boxSizing: 'border-box', fontFamily: 'Arial,Helvetica,sans-serif', color: '#f1f5f9', background: '#111827' }}>
+  return <main id="vireon-admin" style={{ width: '100%', maxWidth: 'none', margin: 0, padding: '28px clamp(16px, 2.5vw, 44px) 110px', minHeight: '100vh', boxSizing: 'border-box', fontFamily: 'Arial,Helvetica,sans-serif', color: '#f1f5f9', background: '#111827' }}>
     <style>{`
       /* Apply the dark canvas only while the private analytics panel exists. */
       html:has(#vireon-admin), body:has(#vireon-admin) {
@@ -714,6 +724,32 @@ function AnalyticsAdmin() {
         outline-offset: 3px;
       }
       #vireon-admin .va-button:disabled { opacity: .58; cursor: not-allowed; }
+      #vireon-admin .va-floating-refresh {
+        position: fixed;
+        right: max(16px, env(safe-area-inset-right, 0px));
+        bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+        z-index: 100;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        min-height: 52px;
+        padding: 12px 20px;
+        border: 1px solid #93c5fd;
+        border-radius: 999px;
+        background: #2563eb;
+        color: #fff;
+        font: 700 14px/1.25 Arial,Helvetica,sans-serif;
+        box-shadow: 0 6px 22px rgba(0,0,0,.36);
+        cursor: pointer;
+        touch-action: manipulation;
+      }
+      #vireon-admin .va-floating-refresh:hover:not(:disabled) { background: #1d4ed8; }
+      #vireon-admin .va-floating-refresh:focus-visible {
+        outline: 3px solid #bfdbfe;
+        outline-offset: 3px;
+      }
+      #vireon-admin .va-floating-refresh:disabled { opacity: .67; cursor: not-allowed; }
       #vireon-admin .va-panel-metrics {
         display: grid;
         grid-template-columns: 1fr 1.7fr 1fr 1fr;
@@ -743,8 +779,22 @@ function AnalyticsAdmin() {
         #vireon-admin .va-actions { width: 100%; }
         #vireon-admin .va-actions .va-button { flex: 1 1 auto; white-space: normal; }
         #vireon-admin .va-panel-metrics { grid-template-columns: minmax(0,1fr); }
+        #vireon-admin .va-floating-refresh {
+          bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+          right: max(12px, env(safe-area-inset-right, 0px));
+          min-height: 48px;
+          padding: 11px 16px;
+        }
       }
     `}</style>
+    <button type="button" className="va-floating-refresh"
+      aria-label={loading ? 'Atualizando dados do painel' : 'Atualizar dados do painel'}
+      title="Atualizar dados sem voltar ao início da página"
+      disabled={!token.trim() || loading}
+      onClick={refreshVisibleData}>
+      <span aria-hidden="true" style={{ fontSize: 21, lineHeight: 1 }}>{loading ? '◌' : '↻'}</span>
+      <span>{loading ? 'Atualizando...' : 'Atualizar dados'}</span>
+    </button>
     <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-.02em', margin: 0 }}>Vireon Analytics — /v2</h1>
     <p>Eventos do funil www.forcemichaelthompson.app/v2. O token permanece apenas na memória desta aba.</p>
     <div className="va-toolbar-section">
