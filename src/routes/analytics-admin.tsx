@@ -60,8 +60,8 @@ function TrackingHealthPanel({ health }: { health: TrackingHealth }) {
 const EVENT_LABELS: Record<string, string> = {
   page_view: 'Visitas ao funil',
   quiz_start: 'Inícios do quiz',
-  quiz_midpoint: 'Metade do quiz (6/11)',
-  quiz_complete: 'Quiz concluído (11/11)',
+  quiz_midpoint: 'Metade do quiz (6/12)',
+  quiz_complete: 'Quiz concluído (12/12)',
   offer_view: 'Visualizações da oferta',
   checkout_click: 'Cliques no checkout',
   upsell_view: 'Visualizações de upsell',
