@@ -5,7 +5,7 @@ import * as o from "./module-4439.jsx";
 import { A8, TD } from "./module-7439.jsx";
 import { W7, bw } from "./module-2523.jsx";
 import { fv } from "./module-6885.jsx";
-import { trackQuestionMetric } from "../../lib/vireon-browser-tracker";
+import { trackQuestionMetric, trackVideoMetric } from "../../lib/vireon-browser-tracker";
 
 import * as n from "react";
 let i = [
@@ -242,6 +242,7 @@ export function Quiz() {
     let [W, setW_1] = n.useState(0);
     let [A, setA] = n.useState(null);
     let [Y, setY] = n.useState(false);
+    let videoUnlocked = n.useRef(false);
     let [R, setR] = n.useState(false);
     // Track after answering question 6 of 12, and after completing question 12 of 12.
     // Never transmit answers. The central tracker deduplicates per browser session.
@@ -544,7 +545,16 @@ export function Quiz() {
         if (b.kind !== "vsl") {
             return;
         }
+        videoUnlocked.current = false;
         setY(false);
+        // Safety fallback: never trap a visitor if autoplay is blocked or playback stalls.
+        let timer = window.setTimeout(()=>{
+            if (videoUnlocked.current) return;
+            videoUnlocked.current = true;
+            setY(true);
+            trackVideoMetric("quiz", "fallback");
+        }, 12000);
+        return ()=>window.clearTimeout(timer);
     }, [
         b.kind
     ]);
@@ -667,7 +677,15 @@ export function Quiz() {
     }
     if (b.kind === "vsl") {
         return <div className="min-h-screen bg-white"><div className="pt-4">{EiComponent(<><TD/><h2 className="mt-4 text-center text-[22px] font-bold leading-tight text-[#1a1a1a]">Watch this video before you continue</h2><p className="mb-4 mt-1 text-center text-[13px] text-[#888]">The specialist explains exactly how it works.</p><div className="mb-3 w-full"><o.c variant="quiz" onTimeUpdate={(seconds) => {
-            if (seconds >= W7.quiz.delay) setY(true);
+            if (seconds >= W7.quiz.delay && !videoUnlocked.current) {
+                videoUnlocked.current = true;
+                setY(true);
+            }
+        }} onPlaybackError={() => {
+            if (videoUnlocked.current) return;
+            videoUnlocked.current = true;
+            setY(true);
+            trackVideoMetric("quiz", "fallback");
         }}/></div>{Y && <button type="button" onClick={es} className="mt-3 w-full rounded-xl bg-[#2a9d6f] py-3.5 text-[16px] font-semibold text-white">Continue</button>}</>)}</div></div>;
     }
     if (b.kind === "analysis") {

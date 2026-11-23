@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { analyticsReady, appendEvent, incrementQuestionMetric, QUESTION_IDS, json, readObject } from '../../../lib/vireon-analytics.server';
+import { analyticsReady, appendEvent, incrementQuestionMetric, incrementVideoMetric, QUESTION_IDS, json, readObject } from '../../../lib/vireon-analytics.server';
 
 const EVENTS = new Set(['page_view', 'quiz_start', 'quiz_midpoint', 'quiz_complete', 'offer_view', 'checkout_click', 'upsell_view', 'upsell_accept', 'upsell_decline', 'thank_you_view']);
 const TRACKED_ORIGIN = 'https://www.forcemichaelthompson.app';
@@ -34,6 +34,23 @@ export const Route = createFileRoute('/api/analytics/collect')({
       if (origin !== TRACKED_ORIGIN) return json({ error: 'forbidden' }, 403);
       if (!analyticsReady()) return collectorResponse({ error: 'not_configured' }, 503, origin);
       const body = await readObject(request);
+      // Per-VSL counts have no session_id or answers. Never append them to the event log.
+      if (body && (body.event === 'video_view' || body.event === 'video_error' || body.event === 'video_fallback')) {
+        const video = body.video;
+        const traffic = body.traffic;
+        const action = body.event === 'video_view' ? 'view'
+          : body.event === 'video_error' ? 'error' : 'fallback';
+        if ((video !== 'quiz' && video !== 'offer') ||
+            (traffic !== 'fb' && traffic !== 'other') ||
+            (video === 'offer' && action === 'fallback') ||
+            Object.keys(body).some((key) => !['event', 'video', 'traffic'].includes(key))) {
+          return collectorResponse({ error: 'invalid' }, 400, origin);
+        }
+        try {
+          await incrementVideoMetric(video, action, traffic);
+          return collectorResponse({ ok: true }, 200, origin);
+        } catch { return collectorResponse({ error: 'storage_unavailable' }, 503, origin); }
+      }
       // Per-question counts have no session_id or answers. Never append them to the event log.
       if (body && (body.event === 'question_view' || body.event === 'question_advance')) {
         const question = body.question_id;

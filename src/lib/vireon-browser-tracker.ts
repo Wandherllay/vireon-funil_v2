@@ -29,6 +29,40 @@ let utmSource = '';
 let utmCampaign = '';
 const sentMilestones = new Set<string>();
 const sentQuestionMetrics = new Set<string>();
+const sentVideoMetrics = new Set<string>();
+export type VideoVariant = 'quiz' | 'offer';
+export type VideoMetricAction = 'view' | 'error' | 'fallback';
+
+/** Compact aggregate VSL stats, separate from the 5,000 detailed event records. */
+export function trackVideoMetric(video: VideoVariant, action: VideoMetricAction) {
+  if (typeof window === 'undefined' || !isFunnelPage(location.pathname)) return;
+  if (navigator.doNotTrack === '1' || navigator.globalPrivacyControl === true) return;
+  if ((video !== 'quiz' && video !== 'offer') ||
+      (action !== 'view' && action !== 'error' && action !== 'fallback') ||
+      (video === 'offer' && action === 'fallback')) return;
+
+  // Deduplicate by browser session, but transmit no session ID or answer to the collector.
+  const key = 'vireon_v2_videoagg:' + getSession() + ':' + video + ':' + action;
+  if (sentVideoMetrics.has(key)) return;
+  try { if (sessionStorage.getItem(key) === '1') return; } catch {}
+  sentVideoMetrics.add(key);
+  try { sessionStorage.setItem(key, '1'); } catch {}
+  const body = JSON.stringify({
+    event: 'video_' + action, video, traffic: getQuestionTrafficGroup(),
+  });
+  void fetch(COLLECTOR_URL, {
+    method: 'POST', mode: 'cors',
+    headers: { 'Content-Type': 'application/json' },
+    body, keepalive: true, credentials: 'omit',
+  }).then((response) => {
+    if (!response.ok) throw new Error('Video metric HTTP ' + response.status);
+  }).catch(() => {
+    sentVideoMetrics.delete(key);
+    try { sessionStorage.removeItem(key); } catch {}
+    console.warn('[Vireon Analytics] VSL aggregate could not be delivered');
+  });
+}
+
 export type QuizQuestionId =
   | 'symptom' | 'duration' | 'age_band' | 'baking_soda' | 'lemon' | 'spice'
   | 'allergy' | 'tried' | 'goal' | 'sleep' | 'water' | 'routine';
