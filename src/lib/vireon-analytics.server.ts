@@ -44,7 +44,7 @@ export async function readObject(request: Request) {
 // Question analytics is aggregate-only. Never store answers, sessions, IPs or UTM campaigns.
 // These counters are independent from the 5,000-record detailed event log.
 export const QUESTION_IDS = [
-  'symptom', 'duration', 'age_band', 'baking_soda', 'lemon', 'spice',
+  'symptom', 'duration', 'age_band', 'ingredients', 'baking_soda', 'lemon', 'spice',
   'allergy', 'tried', 'goal', 'sleep', 'water', 'routine',
 ] as const;
 export type QuestionId = typeof QUESTION_IDS[number];
