@@ -94,7 +94,7 @@ export function trackQuestionMetric(questionId: QuizQuestionId, action: 'view' |
   try { sessionStorage.setItem(key, '1'); } catch {}
   const body = JSON.stringify({
     event: action === 'view' ? 'question_view' : 'question_advance',
-    question_id: questionId, traffic: getQuestionTrafficGroup(),
+    question_id: questionId, traffic: getQuestionTrafficGroup(), quiz_version: '10',
   });
   void fetch(COLLECTOR_URL, {
     method: 'POST', mode: 'cors',
@@ -158,6 +158,7 @@ export function sendFunnelEvent(event: EventName, detail = '') {
     step: detail.slice(0, 64),
     utm_source: utmSource,
     utm_campaign: utmCampaign,
+    quiz_version: '10',
   });
   // Fetch makes failures observable in DevTools; keepalive supports redirects.
   // Collect directly in the private Vercel project, regardless of /v2 proxy routing.
