@@ -20,8 +20,8 @@ export let W7 = {
 };
 export let ze = {
     complete: {
-        base: 23,
-        charged: 23
+        base: 16.02,
+        charged: 16.02
     },
     essential: {
         base: 14.9,
