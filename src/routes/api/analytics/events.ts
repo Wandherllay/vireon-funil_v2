@@ -17,6 +17,7 @@ export const Route = createFileRoute('/api/analytics/events')({
       try {
         const url = new URL(request.url);
         const search = (url.searchParams.get('q') || '').trim().slice(0, 120).toLowerCase();
+        const quizVersion: '10' | '12' = url.searchParams.get('version') === '12' ? '12' : '10';
         // Redis already retains up to 5,000 entries. Filter before paginating to
         // avoid misleading counts and to exclude events from the Vercel test domain.
         const allowedEvents = new Set([
@@ -67,6 +68,8 @@ export const Route = createFileRoute('/api/analytics/events')({
           if (row.source === 'website') {
             if (row.site_host !== 'www.forcemichaelthompson.app' || !allowedEvents.has(row.event)) return false;
             if (row.event === 'page_view' && row.path !== '/v2' && row.path !== '/v2/') return false;
+            // Historical records have no version tag; treat those as 12-question sessions.
+            if ((row.quiz_version === '10' ? '10' : '12') !== quizVersion) return false;
           } else if (row.source !== 'perfectpay') {
             return false;
           }
@@ -81,7 +84,7 @@ export const Route = createFileRoute('/api/analytics/events')({
           return [
             row.received_at, row.source, row.event, row.session_id, row.path, row.step,
             row.product_name, row.product_code, row.order_code, row.sale_status_enum,
-            row.utm_source, row.utm_campaign,
+            row.utm_source, row.utm_campaign, row.quiz_version,
           ].some((value) => String(value ?? '').toLowerCase().includes(search));
         });
 
@@ -94,6 +97,7 @@ export const Route = createFileRoute('/api/analytics/events')({
             ['Pedido', 'order_code'], ['Status da venda', 'sale_status_enum'],
             ['Valor da venda', 'sale_amount'],
             ['UTM Source', 'utm_source'], ['UTM Campaign', 'utm_campaign'],
+            ['Versão do Quiz', 'quiz_version'],
           ];
           const cell = (value: unknown) => {
             const raw = String(value ?? '').replace(/[\r\n]+/g, ' ');
@@ -171,8 +175,8 @@ export const Route = createFileRoute('/api/analytics/events')({
         const observedStages = [
           { key: 'landing', label: 'Entraram no /v2', count: landingCount },
           { key: 'quiz', label: 'Iniciaram o quiz ou etapa posterior', count: landingSessions.filter(hasQuizOrLater).length },
-          { key: 'quiz_midpoint', label: 'Metade do quiz (6/12) ou etapa posterior', count: landingSessions.filter(hasQuizMidpointOrLater).length },
-          { key: 'quiz_complete', label: 'Finalizaram as 12 perguntas ou etapa posterior', count: landingSessions.filter(hasQuizCompleteOrLater).length },
+          { key: 'quiz_midpoint', label: 'Metade do quiz (' + (quizVersion === '10' ? '5/10' : '6/12') + ') ou etapa posterior', count: landingSessions.filter(hasQuizMidpointOrLater).length },
+          { key: 'quiz_complete', label: 'Finalizaram as ' + quizVersion + ' perguntas ou etapa posterior', count: landingSessions.filter(hasQuizCompleteOrLater).length },
           { key: 'offer', label: 'Oferta ou etapa posterior', count: landingSessions.filter(hasOfferOrLater).length },
           { key: 'checkout', label: 'Clicaram para o checkout', count: landingSessions.filter(hasCheckoutClick).length },
         ].map((stage) => ({
@@ -219,13 +223,13 @@ export const Route = createFileRoute('/api/analytics/events')({
         // Aggregates are independent of the event search and never contain answers.
         // If this optional layer is unavailable, keep the detailed dashboard usable.
         const [questionMetrics, videoMetrics] = await Promise.all([
-          getQuestionMetrics(period).catch(() => null),
+          getQuestionMetrics(period, quizVersion).catch(() => null),
           getVideoMetrics(period).catch(() => null),
         ]);
         return json({
           events: filtered.slice(start, start + pageSize),
           total, page, pageSize, totalPages, maxStored: 5000, distribution, funnel, health, period,
-          questionMetrics, videoMetrics,
+          questionMetrics, videoMetrics, quizVersion,
         });
       } catch { return json({ error: 'storage_unavailable' }, 503); }
     },

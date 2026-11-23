@@ -32,42 +32,20 @@ let i = [
         ]
     },
     {
-        id: "baking_soda",
-        title: "Do you have baking soda at home?",
-        help: "It is the main ingredient of your protocol.",
+        id: "ingredients",
+        title: "Do you already have these ingredients at home?",
+        help: "Baking soda, lemon (or lemon juice), and at least one of these: ginger, cinnamon, or pepper.",
         options: [
-            "Yes, I have some at home",
-            "No, but I can get it easily"
-        ],
-        emojis: [
-            "✅",
-            "🛒"
-        ]
-    },
-    {
-        id: "lemon",
-        title: "Do you have a fresh lemon or lemon juice at home?",
-        help: "Lemon activates the alkaline reaction.",
-        options: [
-            "Yes",
-            "No, but I can buy some"
-        ],
-        emojis: [
-            "✅",
-            "🛒"
-        ]
-    },
-    {
-        id: "spice",
-        title: "Do you have ginger, cinnamon or pepper at home?",
-        help: "One of them is your third ingredient. Which one depends on your answers.",
-        options: [
-            "Yes, I have at least one",
+            "Yes, I have everything listed",
+            "I have some, but not all",
+            "Not yet, but I can get them",
             "I'm not sure"
         ],
         emojis: [
             "✅",
-            "⚠️"
+            "🧂",
+            "🛒",
+            "❓"
         ]
     },
     {
@@ -157,13 +135,11 @@ let u = [
     4,
     6,
     7,
-    8,
-    9,
+    10,
+    11,
     12,
     13,
-    14,
-    15,
-    16
+    14
 ];
 let h = [
     [
@@ -173,19 +149,17 @@ let h = [
     ],
     [
         6,
-        7,
-        8,
-        9
+        7
     ],
     [
+        10,
+        11,
         12,
         13,
-        14,
-        15,
-        16
+        14
     ],
     [
-        23
+        21
     ]
 ];
 let p = [
@@ -193,13 +167,11 @@ let p = [
     3,
     6,
     7,
-    8,
-    9,
+    10,
+    11,
     12,
     13,
-    14,
-    15,
-    16
+    14
 ];
 let f = {
     confirmed: {
@@ -244,11 +216,11 @@ export function Quiz() {
     let [Y, setY] = n.useState(false);
     let videoUnlocked = n.useRef(false);
     let [R, setR] = n.useState(false);
-    // Track after answering question 6 of 12, and after completing question 12 of 12.
+    // QA: track after answering question 5 of 10, and after completing question 10 of 10.
     // Never transmit answers. The central tracker deduplicates per browser session.
     n.useEffect(()=>{
         if (b.kind === "calibrated") {
-            window.vireonTrack?.("quiz_complete", "12_of_12");
+            window.vireonTrack?.("quiz_complete", "10_of_10");
         }
     }, [b.kind]);
     // Record the question being shown, without capturing which option is selected.
@@ -271,23 +243,23 @@ export function Quiz() {
             case "saved":
                 return 5;
             case "confirmed":
-                return 10;
+                return 8;
             case "vsl":
-                return 11;
+                return 9;
             case "calibrated":
-                return 17;
+                return 15;
             case "analysis":
-                return 18;
+                return 16;
             case "howto":
-                return 19;
+                return 17;
             case "stories":
-                return 20;
+                return 18;
             case "loading":
-                return 21;
+                return 19;
             case "guarantee":
-                return 22;
+                return 20;
             default:
-                return 23;
+                return 21;
         }
     })(b);
     let ee = ((e)=>{
@@ -360,7 +332,7 @@ export function Quiz() {
             if (e.kind === "saved") {
                 return {
                     kind: "question",
-                    index: m("baking_soda")
+                    index: m("ingredients")
                 };
             }
             if (e.kind === "confirmed") {
@@ -421,7 +393,7 @@ export function Quiz() {
                         index: m("symptom")
                     };
                 }
-                if (e.index === m("baking_soda")) {
+                if (e.index === m("ingredients")) {
                     return {
                         kind: "saved"
                     };
@@ -564,7 +536,7 @@ export function Quiz() {
         : <button type="button" onClick={en} aria-label="Back" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f5f5f5]"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round"/></svg></button>;
     let eo = <div className="fixed inset-x-0 top-0 z-50 bg-white shadow-sm"><div className="mx-auto max-w-[440px] px-4 pb-1 pt-2"><div className="mb-2 flex items-center justify-between"><div className="flex items-center gap-2">{er}<img src="/v2/esquizz/dr/dr-thompson.png" alt="Dr Michael Thompson" width={40} height={40} className="h-10 w-10 rounded-full border-2 border-emerald-500 object-cover"/><div><div className="flex items-center gap-1"><span className="text-[14px] font-semibold text-[#1a1a1a]" style={{
         letterSpacing: "-0.02em"
-    }}>Dr Michael Thompson</span><svg width="12" height="12" viewBox="0 0 24 24" fill="#2a9d6f" aria-hidden="true"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg></div><span className="text-[12px] text-[#888]">{Z <= 4 ? "Profile assessment" : Z <= 10 ? "Ingredient check" : Z <= 16 ? "Dose calibration" : "Protocol ready"}</span></div></div><span className="text-[12px] text-[#888]">{Z >= 2 && Z <= 4 ? `${Z - 1}/3` : Z >= 6 && Z <= 9 ? `${Z - 5}/4` : Z >= 12 && Z <= 16 ? `${Z - 11}/5` : ""}</span></div><div className="w-full px-4 py-2"><div className="h-1.5 overflow-hidden rounded-full bg-gray-100"><div className="h-full bg-emerald-500 transition-all duration-500" style={{
+    }}>Dr Michael Thompson</span><svg width="12" height="12" viewBox="0 0 24 24" fill="#2a9d6f" aria-hidden="true"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg></div><span className="text-[12px] text-[#888]">{Z <= 4 ? "Profile assessment" : Z <= 8 ? "Ingredient check" : Z <= 14 ? "Dose calibration" : "Protocol ready"}</span></div></div><span className="text-[12px] text-[#888]">{Z >= 2 && Z <= 4 ? `${Z - 1}/3` : Z >= 6 && Z <= 7 ? `${Z - 5}/2` : Z >= 10 && Z <= 14 ? `${Z - 9}/5` : ""}</span></div><div className="w-full px-4 py-2"><div className="h-1.5 overflow-hidden rounded-full bg-gray-100"><div className="h-full bg-emerald-500 transition-all duration-500" style={{
         width: `${ee}%`
     }}/></div></div></div></div>;
     if (b.kind === "age") {
@@ -636,21 +608,21 @@ export function Quiz() {
         ]);
     }
     if (b.kind === "confirmed") {
-        return EdComponent("✅ 3 out of 4 ingredients confirmed", "Your recipe is 75% ready. All that is left is calibrating the doses.", 75, [
+        return EdComponent("✅ Ingredient check completed", "Your ingredient availability and allergy responses were noted.", 75, [
             {
-                label: "Baking soda",
-                status: "confirmed"
-            },
-            {
-                label: "Ingredient 2",
+                label: "Ingredient availability",
                 status: "selected"
             },
             {
-                label: "Ingredient 3",
-                status: "calibrated"
+                label: "Allergy information",
+                status: "selected"
             },
             {
-                label: "Ingredient 4",
+                label: "Video explanation",
+                status: "pending"
+            },
+            {
+                label: "Next steps",
                 status: "pending"
             }
         ]);
@@ -828,8 +800,8 @@ export function Quiz() {
                 if (Q.id === "symptom") {
                     window.vireonTrack?.("quiz_start", "first_answer");
                 }
-                if (Q.id === "spice") {
-                    window.vireonTrack?.("quiz_midpoint", "6_of_12");
+                if (Q.id === "allergy") {
+                    window.vireonTrack?.("quiz_midpoint", "5_of_10");
                 }
                 if (Q.id === "water") {
                     setA({
