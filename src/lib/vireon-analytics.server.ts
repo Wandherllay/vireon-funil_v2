@@ -112,3 +112,61 @@ export async function getQuestionMetrics(period: '24h' | '7d' | '30d' | 'all') {
     filterIndependent: true,
   };
 }
+
+ 
+// Aggregated VSL playback health. Do not record session IDs, answers or page-level events.
+export type VideoMetricVariant = 'quiz' | 'offer';
+export type VideoMetricAction = 'view' | 'error' | 'fallback';
+export async function incrementVideoMetric(
+  video: VideoMetricVariant, action: VideoMetricAction, traffic: QuestionTrafficGroup,
+) {
+  const day = new Date().toISOString().slice(0, 10);
+  const key = 'vireon:v2:video-aggregate:' + day;
+  await command('HINCRBY', key, traffic + ':' + video + ':' + action, 1);
+  await command('EXPIRE', key, 35 * 24 * 60 * 60);
+}
+
+type VideoCounts = { views: number; errors: number; fallbacks: number };
+type VideoGroupedCounts = { quiz: VideoCounts; offer: VideoCounts };
+function emptyVideoCounts(): VideoGroupedCounts {
+  return {
+    quiz: { views: 0, errors: 0, fallbacks: 0 },
+    offer: { views: 0, errors: 0, fallbacks: 0 },
+  };
+}
+export async function getVideoMetrics(period: '24h' | '7d' | '30d' | 'all') {
+  const days = period === '24h' ? 2 : period === '7d' ? 7 : 31;
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  const keys = Array.from({ length: days }, (_, offset) => {
+    const day = new Date(today.getTime() - offset * 86400000).toISOString().slice(0, 10);
+    return 'vireon:v2:video-aggregate:' + day;
+  });
+  const buckets = await Promise.all(keys.map((key) => command('HGETALL', key)));
+  const fb = emptyVideoCounts();
+  const other = emptyVideoCounts();
+  for (const raw of buckets) {
+    const pairs: Array<[string, unknown]> = Array.isArray(raw)
+      ? Array.from({ length: Math.floor(raw.length / 2) }, (_, i) => [String(raw[i * 2]), raw[i * 2 + 1]])
+      : raw && typeof raw === 'object' ? Object.entries(raw as Record<string, unknown>) : [];
+    for (const [field, value] of pairs) {
+      const [traffic, video, action] = field.split(':');
+      if ((traffic !== 'fb' && traffic !== 'other') ||
+          (video !== 'quiz' && video !== 'offer') ||
+          (action !== 'view' && action !== 'error' && action !== 'fallback')) continue;
+      const amount = Number(value);
+      if (!Number.isSafeInteger(amount) || amount < 0) continue;
+      const metric = action === 'view' ? 'views' : action === 'error' ? 'errors' : 'fallbacks';
+      const group = traffic === 'fb' ? fb : other;
+      group[video][metric] += amount;
+    }
+  }
+  const all = emptyVideoCounts();
+  for (const video of ['quiz', 'offer'] as const) {
+    for (const key of ['views', 'errors', 'fallbacks'] as const) {
+      all[video][key] = fb[video][key] + other[video][key];
+    }
+  }
+  return { bySource: { fb, other, all }, daysIncluded: days, retentionDays: 35,
+    granularity: 'UTC_calendar_day', filterIndependent: true };
+}
