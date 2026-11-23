@@ -171,8 +171,8 @@ export const Route = createFileRoute('/api/analytics/events')({
         const observedStages = [
           { key: 'landing', label: 'Entraram no /v2', count: landingCount },
           { key: 'quiz', label: 'Iniciaram o quiz ou etapa posterior', count: landingSessions.filter(hasQuizOrLater).length },
-          { key: 'quiz_midpoint', label: 'Metade do quiz (6/12) ou etapa posterior', count: landingSessions.filter(hasQuizMidpointOrLater).length },
-          { key: 'quiz_complete', label: 'Finalizaram as 12 perguntas ou etapa posterior', count: landingSessions.filter(hasQuizCompleteOrLater).length },
+          { key: 'quiz_midpoint', label: 'Metade do quiz (QA: 5/10) ou etapa posterior', count: landingSessions.filter(hasQuizMidpointOrLater).length },
+          { key: 'quiz_complete', label: 'Finalizaram as 10 perguntas (QA) ou etapa posterior', count: landingSessions.filter(hasQuizCompleteOrLater).length },
           { key: 'offer', label: 'Oferta ou etapa posterior', count: landingSessions.filter(hasOfferOrLater).length },
           { key: 'checkout', label: 'Clicaram para o checkout', count: landingSessions.filter(hasCheckoutClick).length },
         ].map((stage) => ({
