@@ -150,6 +150,68 @@ function QuestionDropoffPanel({ metrics }: { metrics: QuestionMetrics | null }) 
   </section>;
 }
 
+
+type VideoCounts = { views: number; errors: number; fallbacks: number };
+type VideoMetrics = {
+  bySource: Record<'fb' | 'other' | 'all', { quiz: VideoCounts; offer: VideoCounts }>;
+  daysIncluded: number; granularity: string; retentionDays: number;
+};
+function VideoHealthPanel({ metrics }: { metrics: VideoMetrics | null }) {
+  const [source, setSource] = useState<'fb' | 'all' | 'other'>('fb');
+  const grouped = metrics?.bySource?.[source];
+  const fmt = (value: number) => value.toLocaleString('pt-BR');
+  const rate = (errors: number, views: number) => views > 0
+    ? (errors / views * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + '%'
+    : '—';
+  return <details style={{
+    background: '#1e293b', border: '1px solid #475569', borderRadius: 12,
+    padding: '14px 18px', margin: '14px 0',
+  }}>
+    <summary style={{ cursor: 'pointer', fontSize: 15, fontWeight: 700, color: '#e2e8f0' }}>
+      Saúde das VSLs — falhas e avanço alternativo
+    </summary>
+    <div style={{ marginTop: 15 }}>
+      <label style={{ fontSize: 12, color: '#cbd5e1' }}>
+        Origem{' '}
+        <select aria-label="Origem dos contadores das VSLs" value={source}
+          onChange={(e) => setSource(e.target.value as 'fb' | 'other' | 'all')}
+          style={{ background: '#0f172a', color: 'white', border: '1px solid #64748b', borderRadius: 6, padding: 8 }}>
+          <option value="fb">FB (UTM)</option>
+          <option value="all">Todas</option>
+          <option value="other">Sem FB (UTM)</option>
+        </select>
+      </label>
+      {!metrics ? <p style={{ fontSize: 12, color: '#fbbf24' }}>
+        Contadores temporariamente indisponíveis.
+      </p> : !grouped ? null : <div style={{ overflowX: 'auto', marginTop: 10 }}>
+        <table style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse' }}>
+          <thead><tr>{['Vídeo', 'Acessos', 'Falhas', 'Taxa de falhas', 'Avanço alternativo'].map((name) =>
+            <th key={name} style={{ padding: 9, textAlign: 'left', borderBottom: '1px solid #475569' }}>{name}</th>)}</tr></thead>
+          <tbody>{(['quiz', 'offer'] as const).map((name) => {
+            const v = grouped[name];
+            return <tr key={name}>
+              <td style={{ padding: 9, borderBottom: '1px solid #334155', fontWeight: 700 }}>
+                {name === 'quiz' ? '1ª VSL (quiz)' : '2ª VSL (oferta)'}
+              </td>
+              <td style={{ padding: 9 }}>{fmt(v.views)}</td>
+              <td style={{ padding: 9 }}>{fmt(v.errors)}</td>
+              <td style={{ padding: 9 }}>{rate(v.errors, v.views)}</td>
+              <td style={{ padding: 9 }}>{name === 'quiz' ? fmt(v.fallbacks) : 'CTA sempre livre'}</td>
+            </tr>;
+          })}</tbody>
+        </table>
+      </div>}
+      <p style={{ marginTop: 12, fontSize: 12, color: '#94a3b8', lineHeight: 1.5 }}>
+        Uma contagem por VSL e tipo por sessão do navegador, sem respostas nem IDs enviados.
+        Erro significa falha sinalizada pelo player ou rejeição da reprodução; a alternativa
+        da 1ª VSL também pode aparecer por espera de 12 segundos mesmo sem erro explícito.
+        Períodos em dias-calendário UTC ({metrics?.daysIncluded || 0} dias incluídos).
+        Histórico novo, separado dos 5.000 eventos. Taxas não comprovam abandono ou compra.
+      </p>
+    </div>
+  </details>;
+}
+
 const EVENT_LABELS: Record<string, string> = {
   page_view: 'Visitas ao funil',
   quiz_start: 'Inícios do quiz',
@@ -455,6 +517,7 @@ function AnalyticsAdmin() {
   const [distribution, setDistribution] = useState<EventDistributionItem[]>([]);
   const [health, setHealth] = useState<TrackingHealth | null>(null);
   const [questionMetrics, setQuestionMetrics] = useState<QuestionMetrics | null>(null);
+  const [videoMetrics, setVideoMetrics] = useState<VideoMetrics | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -489,6 +552,7 @@ function AnalyticsAdmin() {
       setDistribution(Array.isArray(data.distribution) ? data.distribution : []);
       setHealth(data.health && data.health.storage === 'ok' ? data.health as TrackingHealth : null);
       setQuestionMetrics(data.questionMetrics && data.questionMetrics.bySource ? data.questionMetrics as QuestionMetrics : null);
+      setVideoMetrics(data.videoMetrics && data.videoMetrics.bySource ? data.videoMetrics as VideoMetrics : null);
       setTotal(Number(data.total) || 0);
       setPage(Number(data.page) || 1);
       setPageSize(Number(data.pageSize) || size);
@@ -669,7 +733,7 @@ function AnalyticsAdmin() {
           <label className="va-label" htmlFor="admin-token">Token de administrador</label>
           <input id="admin-token" aria-label="Token administrativo" type="password" autoComplete="off"
             value={token}
-            onChange={(e) => { setToken(e.target.value); setLoaded(false); setEvents([]); setDistribution([]); setSessionFunnel(null); setHealth(null); setQuestionMetrics(null); setTotal(0); }}
+            onChange={(e) => { setToken(e.target.value); setLoaded(false); setEvents([]); setDistribution([]); setSessionFunnel(null); setHealth(null); setQuestionMetrics(null); setVideoMetrics(null); setTotal(0); }}
             placeholder="Digite seu token de administrador" className="va-field"/>
         </div>
         <div className="va-actions">
@@ -730,6 +794,7 @@ function AnalyticsAdmin() {
     {error && <p role="alert" style={{ color: '#fca5a5' }}>{error}</p>}
     {loaded && health && <TrackingHealthPanel health={health} />}
     {loaded && <QuestionDropoffPanel metrics={questionMetrics} />}
+    {loaded && <VideoHealthPanel metrics={videoMetrics} />}
     <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '14px 0' }}>
       <button type="button" className="va-button" aria-expanded={showCharts} aria-controls="vireon-charts"
         onClick={() => setShowCharts((visible) => !visible)}
