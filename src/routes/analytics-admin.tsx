@@ -57,6 +57,99 @@ function TrackingHealthPanel({ health }: { health: TrackingHealth }) {
   </section>;
 }
 
+
+type QuestionMetricRow = { id: string; views: number; advances: number };
+type QuestionMetrics = {
+  bySource: { fb: QuestionMetricRow[]; other: QuestionMetricRow[]; all: QuestionMetricRow[] };
+  totalCounters: number; granularity: string; daysIncluded: number; retentionDays: number;
+};
+const QUESTION_TITLES = [
+  ['symptom', '1. O que deseja melhorar?'],
+  ['duration', '2. Quando percebeu a mudança?'],
+  ['age_band', '3. Faixa etária'],
+  ['baking_soda', '4. Tem bicarbonato em casa?'],
+  ['lemon', '5. Tem limão em casa?'],
+  ['spice', '6. Tem gengibre, canela ou pimenta?'],
+  ['allergy', '7. Alergia a temperos?'],
+  ['tried', '8. O que já tentou?'],
+  ['goal', '9. Objetivo principal'],
+  ['sleep', '10. Horas de sono'],
+  ['water', '11. Consumo de água'],
+  ['routine', '12. Rotina diária'],
+] as const;
+
+function QuestionDropoffPanel({ metrics }: { metrics: QuestionMetrics | null }) {
+  const [source, setSource] = useState<'fb' | 'all' | 'other'>('fb');
+  const rows = metrics?.bySource?.[source] || [];
+  const byId = new Map(rows.map((r) => [r.id, r]));
+  const ordered = QUESTION_TITLES.map(([id, label]) => {
+    const item = byId.get(id);
+    const views = item?.views || 0;
+    const advances = item?.advances || 0;
+    const pending = Math.max(0, views - advances);
+    return { id, label, views, advances, pending, rate: views ? pending / views * 100 : 0 };
+  });
+  const reliable = ordered.filter((row) => row.views >= 10);
+  const worst = reliable.sort((a, b) => b.rate - a.rate || b.pending - a.pending)[0];
+  const fmt = (value: number) => value.toLocaleString('pt-BR');
+  return <section aria-label="Abandono por pergunta" style={{
+    background: '#1e293b', border: '1px solid #475569', padding: 18,
+    borderRadius: 12, margin: '18px 0',
+  }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+      <h2 style={{ fontSize: 18, margin: 0 }}>Onde param no quiz — por pergunta</h2>
+      <label style={{ color: '#cbd5e1', fontSize: 12 }}>
+        Origem{' '}
+        <select aria-label="Origem dos contadores por pergunta" value={source}
+          onChange={(e) => setSource(e.target.value as 'fb' | 'all' | 'other')}
+          style={{ background: '#0f172a', color: '#f8fafc', border: '1px solid #64748b', borderRadius: 6, padding: 8 }}>
+          <option value="fb">FB (UTM)</option>
+          <option value="all">Todas</option>
+          <option value="other">Sem FB (UTM)</option>
+        </select>
+      </label>
+    </div>
+    {!metrics ? <p style={{ color: '#fbbf24', fontSize: 13 }}>Contadores indisponíveis no momento; os outros gráficos continuam funcionando.</p> :
+      !rows.some((row) => row.views > 0) ?
+      <p style={{ color: '#cbd5e1', fontSize: 13 }}>Nenhuma pergunta registrada nesse grupo desde a ativação do novo rastreamento.</p> :
+      worst ? <div style={{ marginTop: 15, padding: 14, borderRadius: 8, border: '1px solid #64748b', background: '#263147' }}>
+        <p style={{ color: '#cbd5e1', fontSize: 12, margin: '0 0 7px' }}>Maior taxa de não avanço observada (mínimo de 10 visualizações)</p>
+        <strong style={{ fontSize: 17, display: 'block' }}>{worst.label}</strong>
+        <strong style={{ display: 'block', fontSize: 28, marginTop: 5, fontVariantNumeric: 'tabular-nums', color: '#fbbf24' }}>
+          {worst.rate.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%
+        </strong>
+        <span style={{ fontSize: 12, color: '#cbd5e1' }}>
+          {fmt(worst.pending)} sem avanço registrado de {fmt(worst.views)} visualizações
+        </span>
+      </div> : <p style={{ color: '#fbbf24', fontSize: 13 }}>
+        Amostra inicial: aguardando ao menos 10 visualizações por pergunta para apontar um gargalo.
+      </p>}
+    <details style={{ marginTop: 14 }}>
+      <summary style={{ cursor: 'pointer', fontWeight: 700, color: '#7dd3fc' }}>Ver as 12 perguntas e seus contadores</summary>
+      <div style={{ overflowX: 'auto', marginTop: 12 }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+          <thead><tr>{['Pergunta', 'Visualizações', 'Avanços', 'Sem avanço', 'Não avanço (%)'].map((title) =>
+            <th key={title} style={{ padding: 8, textAlign: 'left', borderBottom: '1px solid #475569' }}>{title}</th>)}</tr></thead>
+          <tbody>{ordered.map((row) => <tr key={row.id}>
+            <td style={{ padding: 8, borderBottom: '1px solid #334155' }}>{row.label}</td>
+            <td style={{ padding: 8 }}>{fmt(row.views)}</td>
+            <td style={{ padding: 8 }}>{fmt(row.advances)}</td>
+            <td style={{ padding: 8 }}>{fmt(row.pending)}</td>
+            <td style={{ padding: 8 }}>{row.views ? row.rate.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + '%' : '—'}</td>
+          </tr>)}</tbody>
+        </table>
+      </div>
+    </details>
+    <p style={{ margin: '12px 0 0', fontSize: 12, color: '#94a3b8', lineHeight: 1.5 }}>
+      Contadores agregados, uma visualização e um avanço por pergunta por sessão do navegador; sem respostas,
+      identificação de sessão ou detalhes de campanha neste relatório. A origem FB depende da UTM.
+      O período usa dias-calendário UTC ({metrics?.daysIncluded || 0} dias incluídos);
+      a opção 24h abrange hoje e ontem UTC. O histórico agregado é independente dos 5.000 eventos
+      e da pesquisa por eventos. “Sem avanço” não comprova abandono definitivo, pois há sessões em andamento.
+    </p>
+  </section>;
+}
+
 const EVENT_LABELS: Record<string, string> = {
   page_view: 'Visitas ao funil',
   quiz_start: 'Inícios do quiz',
@@ -361,6 +454,7 @@ function AnalyticsAdmin() {
   const [sessionFunnel, setSessionFunnel] = useState<SessionFunnel | null>(null);
   const [distribution, setDistribution] = useState<EventDistributionItem[]>([]);
   const [health, setHealth] = useState<TrackingHealth | null>(null);
+  const [questionMetrics, setQuestionMetrics] = useState<QuestionMetrics | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -394,6 +488,7 @@ function AnalyticsAdmin() {
       setSessionFunnel(data.funnel && Array.isArray(data.funnel.observedStages) ? data.funnel as SessionFunnel : null);
       setDistribution(Array.isArray(data.distribution) ? data.distribution : []);
       setHealth(data.health && data.health.storage === 'ok' ? data.health as TrackingHealth : null);
+      setQuestionMetrics(data.questionMetrics && data.questionMetrics.bySource ? data.questionMetrics as QuestionMetrics : null);
       setTotal(Number(data.total) || 0);
       setPage(Number(data.page) || 1);
       setPageSize(Number(data.pageSize) || size);
@@ -574,7 +669,7 @@ function AnalyticsAdmin() {
           <label className="va-label" htmlFor="admin-token">Token de administrador</label>
           <input id="admin-token" aria-label="Token administrativo" type="password" autoComplete="off"
             value={token}
-            onChange={(e) => { setToken(e.target.value); setLoaded(false); setEvents([]); setDistribution([]); setSessionFunnel(null); setHealth(null); setTotal(0); }}
+            onChange={(e) => { setToken(e.target.value); setLoaded(false); setEvents([]); setDistribution([]); setSessionFunnel(null); setHealth(null); setQuestionMetrics(null); setTotal(0); }}
             placeholder="Digite seu token de administrador" className="va-field"/>
         </div>
         <div className="va-actions">
@@ -634,6 +729,7 @@ function AnalyticsAdmin() {
     </div>
     {error && <p role="alert" style={{ color: '#fca5a5' }}>{error}</p>}
     {loaded && health && <TrackingHealthPanel health={health} />}
+    {loaded && <QuestionDropoffPanel metrics={questionMetrics} />}
     <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '14px 0' }}>
       <button type="button" className="va-button" aria-expanded={showCharts} aria-controls="vireon-charts"
         onClick={() => setShowCharts((visible) => !visible)}
