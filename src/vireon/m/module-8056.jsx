@@ -188,8 +188,8 @@ let h = [
     ]
 ];
 let p = [
-    3,
     2,
+    3,
     6,
     7,
     8,
@@ -232,7 +232,7 @@ export function Quiz() {
     let { interno } = fv();
     let [b, setB] = n.useState({
         kind: "question",
-        index: m("duration")
+        index: m("symptom")
     });
     let [w, setW] = n.useState({});
     let [k, setK] = n.useState(null);
@@ -322,13 +322,13 @@ export function Quiz() {
                 };
             }
             if (e.kind === "question") {
-                if (e.index === m("duration")) {
+                if (e.index === m("symptom")) {
                     return {
                         kind: "question",
-                        index: m("symptom")
+                        index: m("duration")
                     };
                 }
-                if (e.index === m("symptom")) {
+                if (e.index === m("duration")) {
                     return {
                         kind: "age"
                     };
@@ -400,17 +400,17 @@ export function Quiz() {
             if (e.kind === "age") {
                 return {
                     kind: "question",
-                    index: m("symptom")
+                    index: m("duration")
                 };
             }
             if (e.kind === "question") {
-                if (e.index === m("duration")) {
+                if (e.index === m("symptom")) {
                     return e;
                 }
-                if (e.index === m("symptom")) {
+                if (e.index === m("duration")) {
                     return {
                         kind: "question",
-                        index: m("duration")
+                        index: m("symptom")
                     };
                 }
                 if (e.index === m("baking_soda")) {
@@ -542,7 +542,7 @@ export function Quiz() {
         b.kind
     ]);
     let EiComponent = (e)=><div className="mx-auto flex max-w-[440px] flex-col items-center px-6 py-6">{e}</div>;
-    let er = b.kind === "question" && b.index === m("duration")
+    let er = b.kind === "question" && b.index === m("symptom")
         ? <span className="h-8 w-8 shrink-0" aria-hidden="true"/>
         : <button type="button" onClick={en} aria-label="Back" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f5f5f5]"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round"/></svg></button>;
     let eo = <div className="fixed inset-x-0 top-0 z-50 bg-white shadow-sm"><div className="mx-auto max-w-[440px] px-4 pb-1 pt-2"><div className="mb-2 flex items-center justify-between"><div className="flex items-center gap-2">{er}<img src="/v2/esquizz/dr/dr-thompson.png" alt="Dr Michael Thompson" width={40} height={40} className="h-10 w-10 rounded-full border-2 border-emerald-500 object-cover"/><div><div className="flex items-center gap-1"><span className="text-[14px] font-semibold text-[#1a1a1a]" style={{
@@ -798,7 +798,7 @@ export function Quiz() {
                         ]
                     }));
                 g(Z, e);
-                if (Q.id === "duration") {
+                if (Q.id === "symptom") {
                     window.vireonTrack?.("quiz_start", "first_answer");
                 }
                 if (Q.id === "water") {
