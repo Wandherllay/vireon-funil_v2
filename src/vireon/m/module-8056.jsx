@@ -189,7 +189,7 @@ let h = [
 ];
 let p = [
     3,
-    4,
+    2,
     6,
     7,
     8,
@@ -231,7 +231,8 @@ export function Quiz() {
     let t = l.useRouter();
     let { interno } = fv();
     let [b, setB] = n.useState({
-        kind: "age"
+        kind: "question",
+        index: m("duration")
     });
     let [w, setW] = n.useState({});
     let [k, setK] = n.useState(null);
@@ -256,7 +257,7 @@ export function Quiz() {
     let Z = ((e)=>{
         switch(e.kind){
             case "age":
-                return 2;
+                return 4;
             case "question":
                 return p[e.index];
             case "saved":
@@ -317,14 +318,19 @@ export function Quiz() {
         setB((e)=>{
             if (e.kind === "age") {
                 return {
-                    kind: "question",
-                    index: 0
+                    kind: "saved"
                 };
             }
             if (e.kind === "question") {
                 if (e.index === m("duration")) {
                     return {
-                        kind: "saved"
+                        kind: "question",
+                        index: m("symptom")
+                    };
+                }
+                if (e.index === m("symptom")) {
+                    return {
+                        kind: "age"
                     };
                 }
                 if (e.index === m("allergy")) {
@@ -392,12 +398,24 @@ export function Quiz() {
     let en = n.useCallback(()=>{
         setB((e)=>{
             if (e.kind === "age") {
-                return e;
+                return {
+                    kind: "question",
+                    index: m("symptom")
+                };
             }
             if (e.kind === "question") {
-                if (e.index === 0) {
+                if (e.index === m("duration")) {
+                    return e;
+                }
+                if (e.index === m("symptom")) {
                     return {
-                        kind: "age"
+                        kind: "question",
+                        index: m("duration")
+                    };
+                }
+                if (e.index === m("baking_soda")) {
+                    return {
+                        kind: "saved"
                     };
                 }
                 return {
@@ -407,8 +425,7 @@ export function Quiz() {
             }
             if (e.kind === "saved") {
                 return {
-                    kind: "question",
-                    index: m("duration")
+                    kind: "age"
                 };
             }
             if (e.kind === "confirmed") {
@@ -525,7 +542,9 @@ export function Quiz() {
         b.kind
     ]);
     let EiComponent = (e)=><div className="mx-auto flex max-w-[440px] flex-col items-center px-6 py-6">{e}</div>;
-    let er = <button type="button" onClick={en} aria-label="Back" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f5f5f5]"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round"/></svg></button>;
+    let er = b.kind === "question" && b.index === m("duration")
+        ? <span className="h-8 w-8 shrink-0" aria-hidden="true"/>
+        : <button type="button" onClick={en} aria-label="Back" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f5f5f5]"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round"/></svg></button>;
     let eo = <div className="fixed inset-x-0 top-0 z-50 bg-white shadow-sm"><div className="mx-auto max-w-[440px] px-4 pb-1 pt-2"><div className="mb-2 flex items-center justify-between"><div className="flex items-center gap-2">{er}<img src="/v2/esquizz/dr/dr-thompson.png" alt="Dr Michael Thompson" width={40} height={40} className="h-10 w-10 rounded-full border-2 border-emerald-500 object-cover"/><div><div className="flex items-center gap-1"><span className="text-[14px] font-semibold text-[#1a1a1a]" style={{
         letterSpacing: "-0.02em"
     }}>Dr Michael Thompson</span><svg width="12" height="12" viewBox="0 0 24 24" fill="#2a9d6f" aria-hidden="true"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg></div><span className="text-[12px] text-[#888]">{Z <= 4 ? "Profile assessment" : Z <= 10 ? "Ingredient check" : Z <= 16 ? "Dose calibration" : "Protocol ready"}</span></div></div><span className="text-[12px] text-[#888]">{Z >= 2 && Z <= 4 ? `${Z - 1}/3` : Z >= 6 && Z <= 9 ? `${Z - 5}/4` : Z >= 12 && Z <= 16 ? `${Z - 11}/5` : ""}</span></div><div className="w-full px-4 py-2"><div className="h-1.5 overflow-hidden rounded-full bg-gray-100"><div className="h-full bg-emerald-500 transition-all duration-500" style={{
@@ -538,7 +557,7 @@ export function Quiz() {
                 {EiComponent(<div className="w-full">
                     <h2 className="mb-1 text-center text-[24px] font-bold leading-tight text-[#1a1a1a]">What is your age range?</h2>
                     <p className="mb-5 text-center text-[13px] leading-relaxed text-[#888]">
-                        Just one tap to get started. No exact age or weight needed.
+                        Just one tap to continue. No exact age or weight needed.
                     </p>
                     <div className="flex flex-col gap-3" role="radiogroup" aria-label="Age range">
                         {r.map((range) => {
@@ -548,8 +567,7 @@ export function Quiz() {
                                 onClick={() => {
                                     setK(range);
                                     setW((answers) => ({ ...answers, age_band: [range] }));
-                                    g(2, range);
-                                    window.vireonTrack?.("quiz_start", "first_answer");
+                                    g(4, range);
                                     es();
                                 }}
                                 className={`flex w-full items-center gap-3 rounded-xl border px-5 py-4 text-left transition-colors duration-150 ${selected ? "border-2 border-[#2a9d6f] bg-[#f0faf5]" : "border-[#e8e8e8] bg-white hover:border-[#2a9d6f] hover:bg-[#f8fbf9]"}`}>
@@ -780,6 +798,9 @@ export function Quiz() {
                         ]
                     }));
                 g(Z, e);
+                if (Q.id === "duration") {
+                    window.vireonTrack?.("quiz_start", "first_answer");
+                }
                 if (Q.id === "water") {
                     setA({
                         icon: "💧",
