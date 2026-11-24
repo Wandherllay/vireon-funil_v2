@@ -41,5 +41,5 @@ Note: custom domain must actually route `/v2/api/*` to the Vercel TanStack Start
 ## Operational caveats
 - Redis list retains up to 5,000 recent events for 30 days; dashboard shows up to 300 recent entries. This is a starter implementation, not a high-volume event warehouse.
 - Visitors can forge anonymous browser events; this is directional analytics, not billing truth. Consider bot defense / rate limiting before high-volume use.
-- Webhook duplicates may occur; approved payments need transaction-status de-duplication for reliable conversion counts. Present view lists raw notifications.
+- The collector retries temporary delivery failures in the browser. Redis deduplicates retried browser events for 24 hours and PerfectPay notifications with the same order and status for 30 days. Historical rows remain as stored.
 - Comply with site privacy notice, consent rules applicable to campaign tracking, and data retention policy.

@@ -1,9 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { timingSafeEqual } from 'node:crypto';
 import { analyticsReady, getQuestionMetrics, getVideoMetrics, json, recentEvents } from '../../../lib/vireon-analytics.server';
+import { isFunnelEntry } from '../../../lib/vireon-funnel-paths';
 
 function authorized(request: Request) {
-  const expected = process.env.VIREON_ANALYTICS_ADMIN_TOKEN;
+  const expected = process.env['VIREON_ANALYTICS_ADMIN_TOKEN'];
   const provided = request.headers.get('authorization')?.replace(/^Bearer /i, '') || '';
   if (!expected || !provided) return false;
   const a = Buffer.from(expected); const b = Buffer.from(provided);
@@ -27,9 +28,9 @@ export const Route = createFileRoute('/api/analytics/events')({
         const all = await recentEvents(5000);
         const now = Date.now();
         const requestedPeriod = url.searchParams.get('period');
-        const period = ['24h', '7d', '30d', 'all'].includes(requestedPeriod || '')
-          ? requestedPeriod! : '7d';
-        const periodMs: Record<string, number> = {
+        const period = requestedPeriod === '24h' || requestedPeriod === '30d' || requestedPeriod === 'all'
+          ? requestedPeriod : '7d';
+        const periodMs = {
           '24h': 24 * 60 * 60 * 1000,
           '7d': 7 * 24 * 60 * 60 * 1000,
           '30d': 30 * 24 * 60 * 60 * 1000,
@@ -67,7 +68,7 @@ export const Route = createFileRoute('/api/analytics/events')({
           if (!row || typeof row !== 'object') return false;
           if (row.source === 'website') {
             if (row.site_host !== 'www.forcemichaelthompson.app' || !allowedEvents.has(row.event)) return false;
-            if (row.event === 'page_view' && row.path !== '/v2' && row.path !== '/v2/') return false;
+            if (row.event === 'page_view' && !(typeof row.path === 'string' && isFunnelEntry(row.path))) return false;
             // Historical records have no version tag; treat those as 12-question sessions.
             if ((row.quiz_version === '10' ? '10' : '12') !== quizVersion) return false;
           } else if (row.source !== 'perfectpay') {
@@ -173,7 +174,7 @@ export const Route = createFileRoute('/api/analytics/events')({
         const hasQuizOrLater = (events: Set<string>) =>
           events.has('quiz_start') || hasQuizMidpointOrLater(events);
         const observedStages = [
-          { key: 'landing', label: 'Entraram no /v2', count: landingCount },
+          { key: 'landing', label: 'Entraram no funil V2', count: landingCount },
           { key: 'quiz', label: 'Iniciaram o quiz ou etapa posterior', count: landingSessions.filter(hasQuizOrLater).length },
           { key: 'quiz_midpoint', label: 'Metade do quiz (' + (quizVersion === '10' ? '5/10' : '6/12') + ') ou etapa posterior', count: landingSessions.filter(hasQuizMidpointOrLater).length },
           { key: 'quiz_complete', label: 'Finalizaram as ' + quizVersion + ' perguntas ou etapa posterior', count: landingSessions.filter(hasQuizCompleteOrLater).length },
@@ -198,7 +199,7 @@ export const Route = createFileRoute('/api/analytics/events')({
           };
         });
         const lastStage = [
-          { key: 'landing', label: 'Último registro: entrada /v2', count: landingSessions.filter((events) => !hasQuizOrLater(events)).length },
+          { key: 'landing', label: 'Último registro: entrada no funil V2', count: landingSessions.filter((events) => !hasQuizOrLater(events)).length },
           { key: 'quiz', label: 'Último registro: início do quiz', count: landingSessions.filter((events) => hasQuizOrLater(events) && !hasQuizMidpointOrLater(events)).length },
           { key: 'quiz_midpoint', label: 'Último registro: metade do quiz', count: landingSessions.filter((events) => hasQuizMidpointOrLater(events) && !hasQuizCompleteOrLater(events)).length },
           { key: 'quiz_complete', label: 'Último registro: quiz concluído', count: landingSessions.filter((events) => hasQuizCompleteOrLater(events) && !hasOfferOrLater(events)).length },

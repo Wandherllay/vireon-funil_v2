@@ -371,7 +371,7 @@ function ConversionRibbon({ funnel }: { funnel: SessionFunnel }) {
       <h2 style={{ fontSize: 19, fontWeight: 800, margin: 0, color: '#f8fafc' }}>
         Funil de conversão — Vireon /v2
       </h2>
-      <span title="Base: sessões únicas com entrada /v2. Dados do site; não são cliques do Meta Ads nem vendas confirmadas."
+      <span title="Base: sessões únicas com entrada no funil V2. Dados do site; não são cliques do Meta Ads nem vendas confirmadas."
         style={{ color: '#bfdbfe', fontSize: 12, border: '1px solid #60738e',
           padding: '6px 9px', borderRadius: 7 }}>
         Sessões únicas · eventos do site
@@ -385,7 +385,7 @@ function ConversionRibbon({ funnel }: { funnel: SessionFunnel }) {
       border: '1px dashed #64748b', borderRadius: 9, padding: 22,
       color: '#cbd5e1', textAlign: 'center',
     }}>
-      Nenhuma sessão de entrada /v2 encontrada no período e filtros escolhidos.
+      Nenhuma sessão de entrada no funil V2 encontrada no período e filtros escolhidos.
       Confira os eventos recebidos antes de interpretar as taxas de conversão.
     </div> : <>
       <div style={{ overflowX: 'auto', maxWidth: '100%', paddingBottom: 5 }}>
@@ -462,12 +462,12 @@ function SessionFunnelPanel({ funnel }: { funnel: SessionFunnel }) {
       Onde os registros dos visitantes terminam
     </h2>
     <p style={{ fontSize: 13, color: '#cbd5e1', marginTop: 0 }}>
-      Sessões únicas iniciadas na entrada /v2, considerando todos os registros do filtro aplicado.
+      Sessões únicas iniciadas na entrada do funil V2, considerando todos os registros do filtro aplicado.
       Contagens não são número de eventos repetidos. Os novos marcos do quiz só aparecem para sessões rastreadas após a atualização.
     </p>
     {funnel.landingSessions === 0 ?
       <p style={{ background: '#334155', padding: 12, borderRadius: 6 }}>
-        Nenhuma sessão com entrada /v2 identificada neste conjunto de dados. Confira a instalação do rastreador e limpe o filtro antes de interpretar o abandono.
+        Nenhuma sessão com entrada no funil V2 identificada neste conjunto de dados. Confira a instalação do rastreador e limpe o filtro antes de interpretar o abandono.
       </p> :
       <>
         <h3 style={{ fontSize: 15, margin: '15px 0' }}>Avanço observado por etapa</h3>
@@ -512,7 +512,7 @@ function SessionFunnelPanel({ funnel }: { funnel: SessionFunnel }) {
       borderLeft: '3px solid #fbbf24', paddingLeft: 12, marginTop: 18, fontSize: 13,
     }}>
       Há {funnel.sessionsWithoutLanding.toLocaleString('pt-BR')} sessão(ões) com eventos,
-      mas sem entrada /v2 registrada. Podem ser acessos diretos a outras páginas ou falhas na coleta da entrada.
+      mas sem entrada no funil V2 registrada. Podem ser acessos diretos a outras páginas ou falhas na coleta da entrada.
     </p>}
     <p style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.5, marginTop: 18 }}>
       Atenção: “último registro” não prova abandono. Eventos podem não chegar por bloqueio

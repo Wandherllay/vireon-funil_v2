@@ -1,6 +1,6 @@
 // Server-only Upstash Redis REST adapter. Configure in Vercel, never expose credentials in VITE_ variables.
-const endpoint = () => process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-const token = () => process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+const endpoint = () => process.env['KV_REST_API_URL'] || process.env['UPSTASH_REDIS_REST_URL'];
+const token = () => process.env['KV_REST_API_TOKEN'] || process.env['UPSTASH_REDIS_REST_TOKEN'];
 export function analyticsReady() { return Boolean(endpoint() && token()); }
 async function command(...args: (string | number)[]) {
   if (!analyticsReady()) throw new Error('Analytics storage not configured');
@@ -15,14 +15,53 @@ async function command(...args: (string | number)[]) {
   if (data.error) throw new Error('Analytics storage error');
   return data.result;
 }
-export async function appendEvent(record: Record<string, unknown>) {
-  const key = 'vireon:v2:events';
-  await command('LPUSH', key, JSON.stringify(record));
-  await command('LTRIM', key, 0, 4999);
-  await command('EXPIRE', key, 60 * 60 * 24 * 30);
+const eventsKey = 'vireon:v2:events';
+const daySeconds = 24 * 60 * 60;
+const eventRetention = 30 * daySeconds;
+const aggregateRetention = 35 * daySeconds;
+
+// Both keys share a Redis hash slot. Keep the existing list and counters readable.
+function dedupeKey(key: string, id: string) {
+  return '{' + key + '}:seen:' + id;
 }
+
+export function isAnalyticsEventId(value: unknown): value is string {
+  return typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+}
+
+const appendEventScript = `
+  if KEYS[2] and redis.call('EXISTS', KEYS[2]) == 1 then return 0 end
+  redis.call('LPUSH', KEYS[1], ARGV[1])
+  redis.call('LTRIM', KEYS[1], 0, 4999)
+  redis.call('EXPIRE', KEYS[1], ARGV[2])
+  if KEYS[2] then redis.call('SET', KEYS[2], '1', 'EX', ARGV[3]) end
+  return 1
+`;
+
+export async function appendEvent(
+  record: Record<string, unknown>, delivery?: { id: string; source: 'website' | 'perfectpay' },
+) {
+  const keys = delivery ? [eventsKey, dedupeKey(eventsKey, delivery.source + ':' + delivery.id)] : [eventsKey];
+  await command('EVAL', appendEventScript, keys.length, ...keys, JSON.stringify(record), eventRetention,
+    delivery?.source === 'perfectpay' ? eventRetention : daySeconds);
+}
+
+const incrementMetricScript = `
+  if KEYS[2] and redis.call('EXISTS', KEYS[2]) == 1 then return 0 end
+  redis.call('HINCRBY', KEYS[1], ARGV[1], 1)
+  redis.call('EXPIRE', KEYS[1], ARGV[2])
+  if KEYS[2] then redis.call('SET', KEYS[2], '1', 'EX', ARGV[3]) end
+  return 1
+`;
+
+export type MetricDelivery = { id: string; day: string };
+function incrementMetric(key: string, field: string, delivery?: MetricDelivery) {
+  const keys = delivery ? [key, dedupeKey(key, delivery.id)] : [key];
+  return command('EVAL', incrementMetricScript, keys.length, ...keys, field, aggregateRetention, daySeconds);
+}
+
 export async function recentEvents(limit = 200) {
-  const rows = (await command('LRANGE', 'vireon:v2:events', 0, Math.min(Math.max(Math.floor(limit), 1), 5000) - 1)) as string[];
+  const rows = (await command('LRANGE', eventsKey, 0, Math.min(Math.max(Math.floor(limit), 1), 5000) - 1)) as string[];
   return rows.map((row) => JSON.parse(row));
 }
 export function json(data: unknown, status = 200) {
@@ -62,15 +101,14 @@ export type QuestionTrafficGroup = 'fb' | 'other';
 
 export async function incrementQuestionMetric(
   question: QuestionId, action: QuestionMetricAction, traffic: QuestionTrafficGroup,
-  quizVersion: QuizVersion = '12',
+  quizVersion: QuizVersion = '12', delivery?: MetricDelivery,
 ) {
-  const day = new Date().toISOString().slice(0, 10); // UTC calendar day
+  const day = delivery?.day ?? new Date().toISOString().slice(0, 10); // UTC calendar day
   // New questions stay isolated from the previous 12-question counters.
   const key = quizVersion === '10'
     ? 'vireon:v2:question-aggregate:v10:' + day
     : 'vireon:v2:question-aggregate:' + day;
-  await command('HINCRBY', key, traffic + ':' + question + ':' + action, 1);
-  await command('EXPIRE', key, 35 * 24 * 60 * 60);
+  await incrementMetric(key, traffic + ':' + question + ':' + action, delivery);
 }
 
 type QuestionCounts = { id: QuestionId; views: number; advances: number };
@@ -107,6 +145,7 @@ export async function getQuestionMetrics(period: '24h' | '7d' | '30d' | 'all', q
       const amount = Number(value);
       if (index === undefined || !Number.isSafeInteger(amount) || amount < 0) continue;
       const target = traffic === 'fb' ? fb[index] : other[index];
+      if (!target) continue;
       if (action === 'view') target.views += amount;
       else target.advances += amount;
       totalCounters += amount;
@@ -116,8 +155,8 @@ export async function getQuestionMetrics(period: '24h' | '7d' | '30d' | 'all', q
     bySource: {
       fb, other,
       all: questionIds.map((id, i) => ({
-        id, views: fb[i].views + other[i].views,
-        advances: fb[i].advances + other[i].advances,
+        id, views: (fb[i]?.views ?? 0) + (other[i]?.views ?? 0),
+        advances: (fb[i]?.advances ?? 0) + (other[i]?.advances ?? 0),
       })),
     },
     totalCounters,
@@ -134,12 +173,11 @@ export async function getQuestionMetrics(period: '24h' | '7d' | '30d' | 'all', q
 export type VideoMetricVariant = 'quiz' | 'offer';
 export type VideoMetricAction = 'view' | 'error' | 'fallback';
 export async function incrementVideoMetric(
-  video: VideoMetricVariant, action: VideoMetricAction, traffic: QuestionTrafficGroup,
+  video: VideoMetricVariant, action: VideoMetricAction, traffic: QuestionTrafficGroup, delivery?: MetricDelivery,
 ) {
-  const day = new Date().toISOString().slice(0, 10);
+  const day = delivery?.day ?? new Date().toISOString().slice(0, 10);
   const key = 'vireon:v2:video-aggregate:' + day;
-  await command('HINCRBY', key, traffic + ':' + video + ':' + action, 1);
-  await command('EXPIRE', key, 35 * 24 * 60 * 60);
+  await incrementMetric(key, traffic + ':' + video + ':' + action, delivery);
 }
 
 type VideoCounts = { views: number; errors: number; fallbacks: number };

@@ -139,10 +139,11 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useLocation({ select: (location) => location.pathname });
+  const search = useLocation({ select: (location) => location.searchStr });
   useEffect(() => {
     installFunnelTracker();
-    trackRoute(pathname);
-  }, [pathname]);
+    trackRoute();
+  }, [pathname, search]);
 
   return (
     <QueryClientProvider client={queryClient}>
