@@ -20,8 +20,8 @@ export let W7 = {
 };
 export let ze = {
     complete: {
-        base: 16.02,
-        charged: 16.02
+        base: 14.9,
+        charged: 14.9
     },
     essential: {
         base: 14.9,
@@ -41,12 +41,12 @@ export let ze = {
     }
 };
 export let $b = {
-    complete: "https://go.centerpag.com/PPU38CQHQ2N",
-    essential: "https://go.centerpag.com/PPU38CQHT01",
-    discount: "https://go.centerpag.com/PPU38CQHT00",
-    up1: "https://go.centerpag.com/PPU38CQHSU4?upsell=true",
-    up2: "https://go.centerpag.com/PPU38CQHSU8?upsell=true",
-    up3: "https://go.centerpag.com/PPU38CQHSUB?upsell=true"
+    complete: "https://go.centerpag.com/PPU38CQHTO5",
+    essential: "https://go.centerpag.com/PPU38CQHTO7",
+    discount: "https://go.centerpag.com/PPU38CQHTO6",
+    up1: "https://go.centerpag.com/PPU38CQHTTN?upsell=true",
+    up2: "https://go.centerpag.com/PPU38CQHTTP?upsell=true",
+    up3: "https://go.centerpag.com/PPU38CQHTTT?upsell=true"
 };
 export let bw = {
     home: "/",
